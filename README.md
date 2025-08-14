@@ -1,6 +1,6 @@
 # Sheet Flow 🎼
 
-A cross-platform sheet music viewer built with React Native and Expo. Display and interact with MusicXML files using OpenSheetMusicDisplay (OSMD) in a native mobile app and web interface.
+A cross-platform sheet music viewer built with React Native and Expo. Display and interact with MusicXML files using [OpenSheetMusicDisplay (OSMD)](https://github.com/opensheetmusicdisplay) in a native mobile app and web interface.
 
 ## Features
 
