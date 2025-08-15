@@ -1,9 +1,8 @@
 import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { Platform, ScrollView, StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 import SheetMusicDisplay from '@/components/SheetMusicDisplay';
-import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function SheetsScreen() {
@@ -50,19 +49,12 @@ export default function SheetsScreen() {
   }, [selectedFileId]);
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">{selectedFile.title}</ThemedText>
-        <ThemedText style={styles.composer}>by {selectedFile.composer}</ThemedText>
-      </ThemedView>
-      
-      <ThemedView style={styles.sheetContainer}>
-        <SheetMusicDisplay 
-          musicXML={musicXML} 
-          style={styles.sheetMusicContainer}
-        />
-      </ThemedView>
-    </ScrollView>
+    <ThemedView style={styles.sheetContainer}>
+      <SheetMusicDisplay 
+        musicXML={musicXML} 
+        style={styles.sheetMusicContainer}
+      />
+    </ThemedView>
   );
 }
 
@@ -83,12 +75,13 @@ const styles = StyleSheet.create({
   },
   sheetContainer: {
     flex: 1,
-    marginTop: 20,
+    // marginTop: 20,
   },
   sheetMusicContainer: {
+    height: '100%',
     minHeight: 400,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    // borderWidth: 1,
+    // borderColor: '#ccc',
+    // borderRadius: 8,
   },
 });
