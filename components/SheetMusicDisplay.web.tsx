@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { ThemedText } from './ThemedText';
 
 interface SheetMusicDisplayWebProps {
@@ -53,7 +53,10 @@ const SheetMusicDisplayWeb: React.FC<SheetMusicDisplayWebProps> = ({ musicXML, s
 
     const initializeOSMD = () => {
       try {
-        if (containerRef.current && window.opensheetmusicdisplay) {
+        if (containerRef.current && window.opensheetmusicdisplay && musicXML) {
+          console.log('Initializing OSMD with XML length:', musicXML.length);
+          console.log('XML starts with:', musicXML.substring(0, 100));
+          
           // Clear previous content
           containerRef.current.innerHTML = '';
           
@@ -63,16 +66,26 @@ const SheetMusicDisplayWeb: React.FC<SheetMusicDisplayWebProps> = ({ musicXML, s
           // Load and render the music
           osmdRef.current.load(musicXML)
             .then(() => {
+              console.log('OSMD load successful, rendering...');
               osmdRef.current.render();
               setIsLoading(false);
               setError(null);
             })
             .catch((err: Error) => {
+              console.error('OSMD load error:', err);
               setError(`Error rendering sheet music: ${err.message}`);
               setIsLoading(false);
             });
+        } else {
+          console.log('OSMD initialization skipped:', {
+            containerExists: !!containerRef.current,
+            osmdExists: !!window.opensheetmusicdisplay,
+            musicXMLExists: !!musicXML,
+            musicXMLLength: musicXML?.length || 0
+          });
         }
       } catch (err) {
+        console.error('Error in initializeOSMD:', err);
         setError(`Error initializing sheet music display: ${(err as Error).message}`);
         setIsLoading(false);
       }

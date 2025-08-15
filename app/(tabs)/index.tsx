@@ -12,13 +12,13 @@ export default function HomeScreen() {
       id: 'MuzioClementi_SonatinaOpus36No1_Part2.xml',
       title: 'Sonatina Op.36 No.1 - Andante',
       composer: 'Muzio Clementi',
-      path: require('@/assets/sheets/MuzioClementi_SonatinaOpus36No1_Part2.xml'),
+      path: require('../../assets/sheets/MuzioClementi_SonatinaOpus36No1_Part2.xml'),
     },
     {
       id: 'Beethoven_AnDieFerneGeliebte.xml',
       title: 'An die ferne Geliebte - Op. 98',
       composer: 'Ludwig van Beethoven',
-      path: require('@/assets/sheets/Beethoven_AnDieFerneGeliebte.xml'),
+      path: require('../../assets/sheets/Beethoven_AnDieFerneGeliebte.xml'),
     },
   ];
 
