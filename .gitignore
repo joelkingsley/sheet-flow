@@ -3,6 +3,13 @@
 # dependencies
 node_modules/
 
+# Private/sponsor packages - DO NOT COMMIT
+react-native-osmd/
+**/react-native-osmd/
+react-native-osmd-*.tgz
+.env.sponsor
+.npmrc
+
 # Expo
 .expo/
 dist/
@@ -37,3 +44,4 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+.env
