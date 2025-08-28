@@ -50,7 +50,7 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
   <style>
     body {
       margin: 0;
-      padding: 20px;
+      padding: 0;
       font-family: Arial, sans-serif;
       background-color: #f5f5f5;
     }
@@ -59,9 +59,7 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
       height: auto;
       min-height: 400px;
       background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 20px;
+      padding: 0;
       box-sizing: border-box;
     }
     .loading {
@@ -158,10 +156,7 @@ const styles = StyleSheet.create({
   container: {
     minHeight: 500,
     backgroundColor: '#f5f5f5',
-    borderRadius: 8,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#ddd',
   },
   webView: {
     flex: 1,

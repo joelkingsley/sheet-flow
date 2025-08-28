@@ -113,8 +113,7 @@ const SheetMusicDisplayWeb: React.FC<SheetMusicDisplayWebProps> = ({ musicXML, s
           width: '100%',
           minHeight: 400,
           backgroundColor: 'white',
-          borderRadius: 8,
-          padding: 20,
+          padding: 0,
           boxSizing: 'border-box',
           display: isLoading || error ? 'none' : 'block',
         }}
@@ -127,10 +126,7 @@ const styles = StyleSheet.create({
   container: {
     minHeight: 500,
     backgroundColor: '#f5f5f5',
-    borderRadius: 8,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#ddd',
   },
   loadingContainer: {
     position: 'absolute',
