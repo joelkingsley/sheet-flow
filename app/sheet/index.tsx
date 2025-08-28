@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
-import SheetMusicDisplay from '@/components/SheetMusicDisplay';
+import SheetMusicDisplay from '@/components/sheetMusicDisplay/SheetMusicDisplay';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function SheetsScreen() {

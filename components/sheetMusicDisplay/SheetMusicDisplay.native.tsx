@@ -3,7 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { ThemedText } from './ThemedText';
+import { ThemedText } from '../ThemedText';
 
 interface SheetMusicDisplayNativeProps {
   musicXML: string | any;
