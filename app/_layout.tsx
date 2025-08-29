@@ -5,13 +5,36 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { config } from '@gluestack-ui/config';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
+import LoginScreen from './auth/login';
+import TabLayout from './(tabs)/_layout';
+import { ActivityIndicator, View } from 'react-native';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+function AppContent() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // If user is not authenticated, show login screen
+  if (!user) {
+    return <LoginScreen />;
+  }
+
+  // If user is authenticated, show tab layout
+  return <TabLayout />;
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -32,11 +55,7 @@ export default function RootLayout() {
   return (
     <GluestackUIProvider config={config}>
       <AuthProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
+        <AppContent />
         <StatusBar style="auto" />
       </AuthProvider>
     </GluestackUIProvider>

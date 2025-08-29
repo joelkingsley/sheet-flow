@@ -11,7 +11,6 @@ import {
     Text,
     VStack
 } from '@gluestack-ui/themed';
-import { router } from 'expo-router';
 import { createUserWithEmailAndPassword, signInAnonymously, signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import {
@@ -43,15 +42,11 @@ export default function LoginScreen() {
       if (isSignUp) {
         // Sign up new user
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        Alert.alert('Success', 'Account created successfully!', [
-          { text: 'OK', onPress: () => router.replace('/(tabs)') }
-        ]);
+        Alert.alert('Success', 'Account created successfully!');
       } else {
         // Sign in existing user
         userCredential = await signInWithEmailAndPassword(auth, email, password);
-        Alert.alert('Success', 'Welcome back to Sheet Flow!', [
-          { text: 'OK', onPress: () => router.replace('/(tabs)') }
-        ]);
+        Alert.alert('Success', 'Welcome back to Sheet Flow!');
       }
       
       console.log('User:', userCredential.user.email);
@@ -101,9 +96,7 @@ export default function LoginScreen() {
     try {
       const userCredential = await signInAnonymously(auth);
       console.log('Anonymous user:', userCredential.user.uid);
-      Alert.alert('Success', 'Signed in as guest!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
-      ]);
+      Alert.alert('Success', 'Signed in as guest!');
     } catch (error: any) {
       console.error('Anonymous auth error:', error);
       Alert.alert('Error', 'Failed to sign in as guest. Please try again.');
@@ -201,7 +194,7 @@ export default function LoginScreen() {
                 <Pressable 
                   alignItems="center"
                   onPress={() => setIsSignUp(!isSignUp)}
-                  isDisabled={isLoading}
+                  disabled={isLoading}
                 >
                   <Text size="sm" color="$primary600" $dark-color="$primary400" textDecorationLine="underline">
                     {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
