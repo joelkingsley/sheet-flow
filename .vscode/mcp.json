@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "gluestack": {
+      "command": "node",
+      "args": ["/Volumes/PortableSSD/User Data/Developer/Projects/mcp/index.js"]
+    },
+    "firebase": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "firebase-tools@latest", "experimental:mcp"]
+    }
+  }
+}

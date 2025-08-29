@@ -1,11 +1,14 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { FlatList, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Alert, FlatList, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomeScreen() {
+  const { user, signOutUser } = useAuth();
+  
   // List of available MusicXML files in assets/sheets
   const musicFiles = [
     {
@@ -27,6 +30,28 @@ export default function HomeScreen() {
     router.push(`/sheet?fileId=${fileId}`);
   };
 
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out', 
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Sign Out', 
+          style: 'destructive',
+          onPress: async () => {
+            await signOutUser();
+            router.replace('/auth/login');
+          }
+        }
+      ]
+    );
+  };
+
+  const handleSignIn = () => {
+    router.push('/auth/login');
+  };
+
   const renderSheetItem = ({ item }: { item: typeof musicFiles[0] }) => (
     <TouchableOpacity
       style={styles.sheetItem}
@@ -46,7 +71,28 @@ export default function HomeScreen() {
   return (
     <ScrollView>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Sheet Music Library</ThemedText>
+        <ThemedText type="title">Sheet Flow</ThemedText>
+      </ThemedView>
+      
+      {/* User Authentication Section */}
+      <ThemedView style={styles.userSection}>
+        {user ? (
+          <ThemedView style={styles.userInfo}>
+            <ThemedText style={styles.welcomeText}>
+              Welcome back, {user.isAnonymous ? 'Guest' : user.email}!
+            </ThemedText>
+            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+              <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        ) : (
+          <ThemedView style={styles.userInfo}>
+            <ThemedText style={styles.welcomeText}>Welcome to Sheet Flow</ThemedText>
+            <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
+              <ThemedText style={styles.signInText}>Sign In</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        )}
       </ThemedView>
       
       <ThemedView style={styles.listContainer}>
@@ -71,6 +117,47 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 40,
     marginStart: 10,
+  },
+  userSection: {
+    marginHorizontal: 10,
+    marginVertical: 16,
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  userInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  welcomeText: {
+    fontSize: 16,
+    flex: 1,
+    marginRight: 12,
+  },
+  signOutButton: {
+    backgroundColor: '#dc3545',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  signOutText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  signInButton: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  signInText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   listContainer: {
     marginBottom: 20,
