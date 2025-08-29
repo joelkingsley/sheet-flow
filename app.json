@@ -10,14 +10,15 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.sheet-flow"
+      "bundleIdentifier": "com.joelkingsleyr.sheetflow"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.joelkingsleyr.sheetflow"
     },
     "web": {
       "bundler": "metro",

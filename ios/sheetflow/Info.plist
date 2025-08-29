@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>sheetflow</string>
-          <string>com.anonymous.sheet-flow</string>
+          <string>com.joelkingsleyr.sheetflow</string>
         </array>
       </dict>
     </array>
