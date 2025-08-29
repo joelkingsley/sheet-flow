@@ -31,19 +31,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AuthProvider: Setting up auth state listener');
+    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('AuthProvider: Auth state changed', {
+        isLoggedIn: !!user,
+        uid: user?.uid,
+        email: user?.email,
+        isAnonymous: user?.isAnonymous,
+        providerId: user?.providerData?.[0]?.providerId
+      });
+      
+      // Add additional debugging
+      if (user) {
+        console.log('AuthProvider: User is authenticated');
+        console.log('AuthProvider: User metadata:', {
+          creationTime: user.metadata.creationTime,
+          lastSignInTime: user.metadata.lastSignInTime
+        });
+      } else {
+        console.log('AuthProvider: No authenticated user found');
+      }
+      
       setUser(user);
+      setIsLoading(false);
+    }, (error) => {
+      console.error('AuthProvider: Auth state change error:', error);
       setIsLoading(false);
     });
 
-    return unsubscribe;
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('AuthProvider: Cleaning up auth state listener');
+      unsubscribe();
+    };
   }, []);
 
   const signOutUser = async () => {
     try {
+      console.log('AuthProvider: Signing out user');
       await signOut(auth);
+      console.log('AuthProvider: User signed out successfully');
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('AuthProvider: Sign out error:', error);
     }
   };
 

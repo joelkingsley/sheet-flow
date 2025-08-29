@@ -1,4 +1,5 @@
 import { auth } from '@/config/firebase';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Box,
     Button,
@@ -11,8 +12,9 @@ import {
     Text,
     VStack
 } from '@gluestack-ui/themed';
+import { router } from 'expo-router';
 import { createUserWithEmailAndPassword, signInAnonymously, signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -27,6 +29,14 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const { user } = useAuth();
+
+  // Redirect to tabs if user is already authenticated
+  useEffect(() => {
+    if (user) {
+      router.replace('/(tabs)');
+    }
+  }, [user]);
 
   const handleEmailAuth = async () => {
     if (!email || !password) {
@@ -42,11 +52,15 @@ export default function LoginScreen() {
       if (isSignUp) {
         // Sign up new user
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        Alert.alert('Success', 'Account created successfully!');
+        Alert.alert('Success', 'Account created successfully!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') }
+        ]);
       } else {
         // Sign in existing user
         userCredential = await signInWithEmailAndPassword(auth, email, password);
-        Alert.alert('Success', 'Welcome back to Sheet Flow!');
+        Alert.alert('Success', 'Welcome back to Sheet Flow!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') }
+        ]);
       }
       
       console.log('User:', userCredential.user.email);
@@ -96,7 +110,9 @@ export default function LoginScreen() {
     try {
       const userCredential = await signInAnonymously(auth);
       console.log('Anonymous user:', userCredential.user.uid);
-      Alert.alert('Success', 'Signed in as guest!');
+      Alert.alert('Success', 'Signed in as guest!', [
+        { text: 'OK', onPress: () => router.replace('/(tabs)') }
+      ]);
     } catch (error: any) {
       console.error('Anonymous auth error:', error);
       Alert.alert('Error', 'Failed to sign in as guest. Please try again.');
