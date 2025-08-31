@@ -44,7 +44,7 @@ if (getRNMinorVersion() >= 75) {
   }
 }
 
-rootProject.name = 'sheet-flow'
+rootProject.name = 'SheetFlow'
 
 dependencyResolutionManagement {
   versionCatalogs {
