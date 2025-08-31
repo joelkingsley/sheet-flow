@@ -1,22 +1,19 @@
+import {
+  Badge,
+  BadgeText,
+  Box,
+  Button,
+  ButtonText,
+  Heading,
+  HStack,
+  Pressable,
+  Text,
+  VStack
+} from '@gluestack-ui/themed';
 import { router } from 'expo-router';
 import React from 'react';
-import { Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { 
-  Button, 
-  ButtonText, 
-  VStack, 
-  HStack, 
-  Box, 
-  Text, 
-  Heading, 
-  Pressable,
-  ScrollView,
-  Badge,
-  BadgeText
-} from '@gluestack-ui/themed';
+import { Alert, FlatList, StyleSheet } from 'react-native';
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomeScreen() {
