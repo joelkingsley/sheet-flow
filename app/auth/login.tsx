@@ -1,6 +1,7 @@
 import { GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from '@/config/auth';
 import { auth } from '@/config/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { AntDesign } from '@expo/vector-icons';
 import {
     Box,
     Button,
@@ -335,7 +336,7 @@ export default function LoginScreen() {
                     $dark-active-bg="$backgroundDark600"
                   >
                     <HStack space="sm" alignItems="center">
-                      <Text fontSize="$lg">🔍</Text>
+                      <AntDesign name="google" size={20} color="#4285f4" />
                       <ButtonText color="$textLight900" $dark-color="$textDark50">
                         Continue with Google
                       </ButtonText>
@@ -351,7 +352,7 @@ export default function LoginScreen() {
                       $active-bg="$backgroundDark800"
                     >
                       <HStack space="sm" alignItems="center">
-                        <Text fontSize="$lg" color="$white">🍎</Text>
+                        <AntDesign name="apple" size={20} color="white" />
                         <ButtonText color="$white">
                           Continue with Apple
                         </ButtonText>
