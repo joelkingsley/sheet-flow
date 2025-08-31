@@ -1,7 +1,19 @@
 import { router } from 'expo-router';
 import React from 'react';
 import { Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { Button, ButtonText } from '@gluestack-ui/themed';
+import { 
+  Button, 
+  ButtonText, 
+  VStack, 
+  HStack, 
+  Box, 
+  Text, 
+  Heading, 
+  Pressable,
+  ScrollView,
+  Badge,
+  BadgeText
+} from '@gluestack-ui/themed';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -10,30 +22,48 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function HomeScreen() {
   const { user, signOutUser } = useAuth();
   
+  // Helper function to get difficulty badge styling
+  const getDifficultyBadge = (difficulty: 'easy' | 'medium' | 'hard') => {
+    switch (difficulty) {
+      case 'easy':
+        return { action: 'success' as const, text: 'Easy' };
+      case 'medium':
+        return { action: 'warning' as const, text: 'Medium' };
+      case 'hard':
+        return { action: 'error' as const, text: 'Hard' };
+      default:
+        return { action: 'muted' as const, text: 'Unknown' };
+    }
+  };
+  
   // List of available MusicXML files in assets/sheets
   const musicFiles = [
     {
       id: 'MuzioClementi_SonatinaOpus36No1_Part2.xml',
       title: 'Sonatina Op.36 No.1 - Andante',
       composer: 'Muzio Clementi',
+      difficulty: 'easy' as const,
       path: require('../../assets/sheets/MuzioClementi_SonatinaOpus36No1_Part2.xml'),
     },
     {
       id: 'Beethoven_AnDieFerneGeliebte.xml',
       title: 'An die ferne Geliebte - Op. 98',
       composer: 'Ludwig van Beethoven',
+      difficulty: 'hard' as const,
       path: require('../../assets/sheets/Beethoven_AnDieFerneGeliebte.xml'),
     },
     {
       id: 'Mendelssohn.xml',
       title: 'Mendelssohn - Op. 98',
       composer: 'Felix Mendelssohn',
+      difficulty: 'medium' as const,
       path: require('../../assets/sheets/Mendelssohn.xml'),
     },
     {
       id: 'Original_Silent_Night.xml',
       title: 'Original Silent Night',
       composer: 'Traditional',
+      difficulty: 'easy' as const,
       path: require('../../assets/sheets/Original_Silent_Night.xml'),
     }
   ];
@@ -65,59 +95,70 @@ export default function HomeScreen() {
     router.push('/auth/login');
   };
 
-  const renderSheetItem = ({ item }: { item: typeof musicFiles[0] }) => (
-    <TouchableOpacity
-      style={styles.sheetItem}
-      onPress={() => handleSelectFile(item.id)}
-    >
-      <ThemedView style={styles.sheetItemContent}>
-        <ThemedText type="subtitle" style={styles.sheetTitle}>
-          {item.title}
-        </ThemedText>
-        <ThemedText style={styles.sheetComposer}>
-          by {item.composer}
-        </ThemedText>
-      </ThemedView>
-    </TouchableOpacity>
-  );
+  const renderSheetItem = ({ item }: { item: typeof musicFiles[0] }) => {
+    const difficultyBadge = getDifficultyBadge(item.difficulty);
+    
+    return (
+      <Pressable
+        onPress={() => handleSelectFile(item.id)}
+        style={styles.pressableItem}
+      >
+        <Box style={styles.sheetItem}>
+          <HStack justifyContent="space-between" alignItems="flex-start" space="md">
+            <VStack space="xs" flex={1}>
+              <Text size="lg" bold style={styles.sheetTitle}>
+                {item.title}
+              </Text>
+              <Text size="sm" style={styles.sheetComposer}>
+                by {item.composer}
+              </Text>
+            </VStack>
+            <Badge action={difficultyBadge.action} size="sm">
+              <BadgeText>{difficultyBadge.text}</BadgeText>
+            </Badge>
+          </HStack>
+        </Box>
+      </Pressable>
+    );
+  };
 
   const renderHeader = () => (
-    <>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Sheet Flow</ThemedText>
-      </ThemedView>
+    <VStack space="lg" style={styles.headerContainer}>
+      <Box style={styles.titleContainer}>
+        <Heading size="2xl">Sheet Flow</Heading>
+      </Box>
       
       {/* User Authentication Section */}
-      <ThemedView style={styles.userSection}>
-        {user ? (
-          <ThemedView style={styles.userInfo}>
-            <ThemedText style={styles.welcomeText}>
-              Welcome back, {user.isAnonymous ? 'Guest' : user.email}!
-            </ThemedText>
+      <Box style={styles.userSection}>
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text size="md" style={styles.welcomeText}>
+            {user 
+              ? `Welcome back, ${user.isAnonymous ? 'Guest' : user.email}!`
+              : 'Welcome to Sheet Flow'
+            }
+          </Text>
+          {user ? (
             <Button size="sm" action="negative" onPress={handleSignOut}>
               <ButtonText>Sign Out</ButtonText>
             </Button>
-          </ThemedView>
-        ) : (
-          <ThemedView style={styles.userInfo}>
-            <ThemedText style={styles.welcomeText}>Welcome to Sheet Flow</ThemedText>
+          ) : (
             <Button size="sm" action="primary" onPress={handleSignIn}>
               <ButtonText>Sign In</ButtonText>
             </Button>
-          </ThemedView>
-        )}
-      </ThemedView>
+          )}
+        </HStack>
+      </Box>
       
-      <ThemedView style={styles.listContainer}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>
+      <Box style={styles.listContainer}>
+        <Heading size="lg" style={styles.sectionTitle}>
           Available Sheet Music
-        </ThemedText>
-      </ThemedView>
-    </>
+        </Heading>
+      </Box>
+    </VStack>
   );
 
   return (
-    <ThemedView style={styles.container}>
+    <Box style={styles.container}>
       <FlatList
         data={musicFiles}
         renderItem={renderSheetItem}
@@ -127,7 +168,7 @@ export default function HomeScreen() {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={true}
       />
-    </ThemedView>
+    </Box>
   );
 }
 
@@ -137,38 +178,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   contentContainer: {
-    padding: 10,
+    padding: 16,
     paddingBottom: 20,
   },
+  headerContainer: {
+    marginBottom: 16,
+  },
   titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
     marginTop: 40,
-    marginStart: 10,
+    marginBottom: 16,
+    paddingHorizontal: 4,
   },
   userSection: {
-    marginHorizontal: 10,
-    marginVertical: 16,
+    marginHorizontal: 4,
+    marginVertical: 8,
     padding: 16,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e9ecef',
   },
-  userInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   welcomeText: {
-    fontSize: 16,
     flex: 1,
     marginRight: 12,
   },
   listContainer: {
-    marginBottom: 12,
-    marginStart: 10,
-    marginEnd: 10,
+    marginHorizontal: 4,
+    marginBottom: 8,
   },
   sectionTitle: {
     marginBottom: 12,
@@ -176,33 +212,29 @@ const styles = StyleSheet.create({
   flatList: {
     flex: 1,
   },
+  pressableItem: {
+    marginBottom: 8,
+    marginHorizontal: 4,
+  },
   sheetItem: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
-    marginBottom: 8,
-    marginHorizontal: 10,
+    borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  selectedSheetItem: {
-    backgroundColor: '#e3f2fd',
-    borderColor: '#2196f3',
-  },
-  sheetItemContent: {
-    flex: 1,
+    borderColor: '#e9ecef',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   sheetTitle: {
     marginBottom: 4,
   },
   sheetComposer: {
     opacity: 0.7,
-    fontSize: 14,
-  },
-  displayContainer: {
-    marginTop: 20,
-  },
-  sheetMusicContainer: {
-    marginTop: 12,
   },
 });
