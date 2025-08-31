@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { Alert, FlatList, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { Button, ButtonText } from '@gluestack-ui/themed';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -80,8 +81,8 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  return (
-    <ScrollView style={styles.scrollView}>
+  const renderHeader = () => (
+    <>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Sheet Flow</ThemedText>
       </ThemedView>
@@ -93,16 +94,16 @@ export default function HomeScreen() {
             <ThemedText style={styles.welcomeText}>
               Welcome back, {user.isAnonymous ? 'Guest' : user.email}!
             </ThemedText>
-            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-              <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
-            </TouchableOpacity>
+            <Button size="sm" action="negative" onPress={handleSignOut}>
+              <ButtonText>Sign Out</ButtonText>
+            </Button>
           </ThemedView>
         ) : (
           <ThemedView style={styles.userInfo}>
             <ThemedText style={styles.welcomeText}>Welcome to Sheet Flow</ThemedText>
-            <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
-              <ThemedText style={styles.signInText}>Sign In</ThemedText>
-            </TouchableOpacity>
+            <Button size="sm" action="primary" onPress={handleSignIn}>
+              <ButtonText>Sign In</ButtonText>
+            </Button>
           </ThemedView>
         )}
       </ThemedView>
@@ -111,22 +112,33 @@ export default function HomeScreen() {
         <ThemedText type="subtitle" style={styles.sectionTitle}>
           Available Sheet Music
         </ThemedText>
-        <FlatList
-          data={musicFiles}
-          renderItem={renderSheetItem}
-          keyExtractor={(item) => item.id}
-          style={styles.flatList}
-          scrollEnabled={true}
-        />
       </ThemedView>
-    </ScrollView>
+    </>
+  );
+
+  return (
+    <ThemedView style={styles.container}>
+      <FlatList
+        data={musicFiles}
+        renderItem={renderSheetItem}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        style={styles.flatList}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={true}
+      />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
+  container: {
+    flex: 1,
     backgroundColor: '#ffffff',
+  },
+  contentContainer: {
     padding: 10,
+    paddingBottom: 20,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -153,41 +165,22 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 12,
   },
-  signOutButton: {
-    backgroundColor: '#dc3545',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  signOutText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  signInButton: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  signInText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   listContainer: {
-    marginBottom: 20,
+    marginBottom: 12,
     marginStart: 10,
     marginEnd: 10,
   },
   sectionTitle: {
     marginBottom: 12,
   },
-  flatList: {},
+  flatList: {
+    flex: 1,
+  },
   sheetItem: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
     marginBottom: 8,
+    marginHorizontal: 10,
     padding: 16,
     borderWidth: 1,
     borderColor: '#e0e0e0',
