@@ -1,3 +1,4 @@
+import { GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from '@/config/auth';
 import { auth } from '@/config/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -6,14 +7,17 @@ import {
     ButtonText,
     Center,
     Heading,
+    HStack,
     Input,
     InputField,
     Pressable,
     Text,
     VStack
 } from '@gluestack-ui/themed';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
-import { createUserWithEmailAndPassword, signInAnonymously, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, OAuthProvider, signInAnonymously, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
@@ -30,6 +34,14 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const { user } = useAuth();
+
+  // Configure Google Sign-In
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: GOOGLE_WEB_CLIENT_ID,
+      iosClientId: GOOGLE_IOS_CLIENT_ID,
+    });
+  }, []);
 
   // Redirect to tabs if user is already authenticated
   useEffect(() => {
@@ -116,6 +128,89 @@ export default function LoginScreen() {
     } catch (error: any) {
       console.error('Anonymous auth error:', error);
       Alert.alert('Error', 'Failed to sign in as guest. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Check if your device supports Google Play
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      
+      // Get the users ID token
+      const result = await GoogleSignin.signIn();
+      
+      // Create a Google credential with the token
+      const googleCredential = GoogleAuthProvider.credential(result.data?.idToken);
+      
+      // Sign-in the user with the credential
+      const userCredential = await signInWithCredential(auth, googleCredential);
+      
+      Alert.alert('Success', 'Signed in with Google!', [
+        { text: 'OK', onPress: () => router.replace('/(tabs)') }
+      ]);
+      
+      console.log('Google user:', userCredential.user.email);
+    } catch (error: any) {
+      console.error('Google sign-in error:', error);
+      
+      let errorMessage = 'Google sign-in failed';
+      
+      if (error.code === 'sign_in_cancelled') {
+        errorMessage = 'Sign-in was cancelled';
+      } else if (error.code === 'play_services_not_available') {
+        errorMessage = 'Google Play Services not available';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setIsLoading(true);
+    
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      
+      // Create an Apple credential with the token
+      const provider = new OAuthProvider('apple.com');
+      const firebaseCredential = provider.credential({
+        idToken: credential.identityToken || undefined,
+        rawNonce: undefined,
+      });
+      
+      // Sign-in the user with the credential
+      const userCredential = await signInWithCredential(auth, firebaseCredential);
+      
+      Alert.alert('Success', 'Signed in with Apple!', [
+        { text: 'OK', onPress: () => router.replace('/(tabs)') }
+      ]);
+      
+      console.log('Apple user:', userCredential.user.email);
+    } catch (error: any) {
+      console.error('Apple sign-in error:', error);
+      
+      let errorMessage = 'Apple sign-in failed';
+      
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        errorMessage = 'Sign-in was cancelled';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -216,6 +311,54 @@ export default function LoginScreen() {
                     {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
                   </Text>
                 </Pressable>
+              </VStack>
+
+              {/* Social Authentication */}
+              <VStack space="md">
+                <VStack space="xs" alignItems="center">
+                  <Text size="sm" color="$textLight500" $dark-color="$textDark500">
+                    or continue with
+                  </Text>
+                </VStack>
+                
+                <VStack space="sm">
+                  {/* Google Sign-In Button */}
+                  <Button
+                    onPress={handleGoogleSignIn}
+                    isDisabled={isLoading}
+                    bg="$white"
+                    borderColor="$borderLight300"
+                    borderWidth="$1"
+                    $dark-bg="$backgroundDark700"
+                    $dark-borderColor="$borderDark700"
+                    $active-bg="$backgroundLight100"
+                    $dark-active-bg="$backgroundDark600"
+                  >
+                    <HStack space="sm" alignItems="center">
+                      <Text fontSize="$lg">🔍</Text>
+                      <ButtonText color="$textLight900" $dark-color="$textDark50">
+                        Continue with Google
+                      </ButtonText>
+                    </HStack>
+                  </Button>
+
+                  {/* Apple Sign-In Button (iOS only) */}
+                  {Platform.OS === 'ios' && (
+                    <Button
+                      onPress={handleAppleSignIn}
+                      isDisabled={isLoading}
+                      bg="$black"
+                      $active-bg="$backgroundDark800"
+                    >
+                      <HStack space="sm" alignItems="center">
+                        <Text fontSize="$lg" color="$white">🍎</Text>
+                        <ButtonText color="$white">
+                          Continue with Apple
+                        </ButtonText>
+                      </HStack>
+                    </Button>
+                  )}
+                </VStack>
               </VStack>
 
               {/* Guest Access */}

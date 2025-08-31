@@ -93,6 +93,51 @@ Start developing by editing files in the **app** directory. This project uses [f
 
 ---
 
+## Social Authentication Setup
+
+The app supports Google and Apple Sign-In for user authentication. To enable these features:
+
+### 1. Firebase Configuration
+
+1. **Set up Firebase Project:**
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project or use existing one
+   - Enable Authentication service
+   - Add Google and Apple as sign-in providers
+
+2. **Get Client IDs:**
+   - Go to Project Settings > General tab
+   - Scroll to "Your apps" section
+   - Note the Web Client ID from your web app configuration
+   - For iOS: Add an iOS app or check existing iOS app for Client ID
+
+### 2. Configure Client IDs
+
+Update the file `config/auth.ts` with your actual client IDs:
+
+```typescript
+export const GOOGLE_WEB_CLIENT_ID = 'your-actual-web-client-id.apps.googleusercontent.com';
+export const GOOGLE_IOS_CLIENT_ID = 'your-actual-ios-client-id.apps.googleusercontent.com';
+```
+
+### 3. Platform-specific Setup
+
+**For Android:**
+- Download `google-services.json` from Firebase Console
+- Place it in the root directory of your project
+
+**For iOS:**
+- Download `GoogleService-Info.plist` from Firebase Console
+- Add it to your iOS project when building with Xcode
+
+### 4. Test Social Authentication
+
+- Google Sign-In works on Android and iOS
+- Apple Sign-In only works on iOS devices (not simulators in some cases)
+- Make sure to test on actual devices for full functionality
+
+---
+
 ## Building Release Standalone Apps
 
 For production-ready standalone builds that don't require a Metro bundler:

@@ -10,7 +10,9 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.joelkingsleyr.sheetflow"
+      "bundleIdentifier": "com.joelkingsleyr.sheetflow",
+      "usesAppleSignIn": true,
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +20,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.joelkingsleyr.sheetflow"
+      "package": "com.joelkingsleyr.sheetflow",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -27,6 +30,8 @@
     },
     "plugins": [
       "expo-router",
+      "@react-native-google-signin/google-signin",
+      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {
