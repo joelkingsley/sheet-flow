@@ -5,7 +5,9 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      // Fix for Firebase Auth TypeScript types in React Native - maps to React Native specific type definitions
+      "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
     }
   },
   "include": [
