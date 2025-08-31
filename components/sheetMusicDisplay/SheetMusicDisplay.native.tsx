@@ -1,7 +1,7 @@
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { ThemedText } from '../ThemedText';
 
@@ -52,13 +52,13 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
+      background-color: #ffffff;
     }
     #osmdContainer {
       width: 100%;
       height: auto;
       min-height: 400px;
-      background-color: white;
+      background-color: #ffffff;
       padding: 0;
       box-sizing: border-box;
     }
@@ -66,6 +66,7 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
       text-align: center;
       padding: 40px;
       color: #666;
+      background-color: #ffffff;
     }
     .error {
       text-align: center;
@@ -122,46 +123,53 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
   }, [xmlString]);
 
   return (
-    <View style={[styles.container, style]}>
-      {xmlString ? (
-        <WebView
-          source={{ html: generateWebViewHTML() }}
-          style={styles.webView}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          renderLoading={() => (
-            <View style={styles.loadingContainer}>
-              <ThemedText style={styles.loadingText}>Loading sheet music...</ThemedText>
-            </View>
-          )}
-          onError={(syntheticEvent) => {
-            const { nativeEvent } = syntheticEvent;
-            console.error('WebView error: ', nativeEvent);
-          }}
-          onMessage={(event) => {
-            console.log('WebView message:', event.nativeEvent.data);
-          }}
-        />
-      ) : (
-        <View style={styles.loadingContainer}>
-          <ThemedText style={styles.loadingText}>Loading sheet music...</ThemedText>
-        </View>
-      )}
-    </View>
+    <SafeAreaView style={[styles.safeArea, style]}>
+      <View style={styles.container}>
+        {xmlString ? (
+          <WebView
+            source={{ html: generateWebViewHTML() }}
+            style={styles.webView}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            renderLoading={() => (
+              <View style={styles.loadingContainer}>
+                <ThemedText style={styles.loadingText}>Loading sheet music...</ThemedText>
+              </View>
+            )}
+            onError={(syntheticEvent) => {
+              const { nativeEvent } = syntheticEvent;
+              console.error('WebView error: ', nativeEvent);
+            }}
+            onMessage={(event) => {
+              console.log('WebView message:', event.nativeEvent.data);
+            }}
+          />
+        ) : (
+          <View style={styles.loadingContainer}>
+            <ThemedText style={styles.loadingText}>Loading sheet music...</ThemedText>
+          </View>
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
   container: {
+    flex: 1,
     minHeight: 500,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
     overflow: 'hidden',
   },
   webView: {
     flex: 1,
     minHeight: 500,
-    backgroundColor: 'transparent',
+    backgroundColor: '#ffffff',
   },
   loadingContainer: {
     position: 'absolute',
@@ -171,7 +179,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
   },
   loadingText: {
     fontSize: 16,

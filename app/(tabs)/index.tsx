@@ -23,6 +23,18 @@ export default function HomeScreen() {
       composer: 'Ludwig van Beethoven',
       path: require('../../assets/sheets/Beethoven_AnDieFerneGeliebte.xml'),
     },
+    {
+      id: 'Mendelssohn.xml',
+      title: 'Mendelssohn - Op. 98',
+      composer: 'Felix Mendelssohn',
+      path: require('../../assets/sheets/Mendelssohn.xml'),
+    },
+    {
+      id: 'Original_Silent_Night.xml',
+      title: 'Original Silent Night',
+      composer: 'Traditional',
+      path: require('../../assets/sheets/Original_Silent_Night.xml'),
+    }
   ];
 
   const handleSelectFile = (fileId: string) => {
@@ -69,7 +81,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <ScrollView>
+    <ScrollView style={styles.scrollView}>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Sheet Flow</ThemedText>
       </ThemedView>
@@ -104,7 +116,7 @@ export default function HomeScreen() {
           renderItem={renderSheetItem}
           keyExtractor={(item) => item.id}
           style={styles.flatList}
-          scrollEnabled={false}
+          scrollEnabled={true}
         />
       </ThemedView>
     </ScrollView>
@@ -112,6 +124,10 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    backgroundColor: '#ffffff',
+    padding: 10,
+  },
   titleContainer: {
     flexDirection: 'row',
     gap: 8,
@@ -122,7 +138,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     marginVertical: 16,
     padding: 16,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e9ecef',
@@ -167,11 +183,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 12,
   },
-  flatList: {
-    maxHeight: 300,
-  },
+  flatList: {},
   sheetItem: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
     borderRadius: 8,
     marginBottom: 8,
     padding: 16,

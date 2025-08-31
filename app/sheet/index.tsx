@@ -23,6 +23,18 @@ export default function SheetsScreen() {
       composer: 'Ludwig van Beethoven',
       path: require('../../assets/sheets/Beethoven_AnDieFerneGeliebte.xml'),
     },
+    {
+      id: 'Mendelssohn.xml',
+      title: 'Mendelssohn - Op. 98',
+      composer: 'Felix Mendelssohn',
+      path: require('../../assets/sheets/Mendelssohn.xml'),
+    },
+    {
+      id: 'Original_Silent_Night.xml',
+      title: 'Original Silent Night',
+      composer: 'Traditional',
+      path: require('../../assets/sheets/Original_Silent_Night.xml'),
+    }
   ];
 
   // Get the selected file from params or default to first file
