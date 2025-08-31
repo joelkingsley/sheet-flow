@@ -33,7 +33,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "androidPackageName": "com.joelkingsleyr.sheetflow"
+          "iosUrlScheme": "com.googleusercontent.apps.79144339891-1ht3a010s7vtd7oap4ettvg2ur8ant4c"
         }
       ],
       "expo-apple-authentication",
