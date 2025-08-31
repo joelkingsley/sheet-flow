@@ -34,6 +34,12 @@ export default function SheetsScreen() {
       title: 'Original Silent Night',
       composer: 'Traditional',
       path: require('../../assets/sheets/Original_Silent_Night.xml'),
+    },
+    {
+      id: 'ToGodBeTheGlory.xml',
+      title: 'To God Be The Glory',
+      composer: 'Traditional',
+      path: require('../../assets/sheets/ToGodBeTheGlory.xml'),
     }
   ];
 

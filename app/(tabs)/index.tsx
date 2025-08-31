@@ -62,6 +62,13 @@ export default function HomeScreen() {
       composer: 'Traditional',
       difficulty: 'easy' as const,
       path: require('../../assets/sheets/Original_Silent_Night.xml'),
+    },
+    {
+      id: 'ToGodBeTheGlory.xml',
+      title: 'To God Be The Glory',
+      composer: 'Traditional',
+      difficulty: 'easy' as const,
+      path: require('../../assets/sheets/ToGodBeTheGlory.xml'),
     }
   ];
 
