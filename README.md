@@ -93,6 +93,74 @@ Start developing by editing files in the **app** directory. This project uses [f
 
 ---
 
+## Building Release Standalone Apps
+
+For production-ready standalone builds that don't require a Metro bundler:
+
+### iOS Release Build
+
+1. **Generate native iOS project:**
+   ```bash
+   npx expo prebuild --platform ios --clean
+   ```
+
+2. **Export JavaScript bundle:**
+   ```bash
+   npx expo export --platform ios --output-dir ios-build
+   ```
+
+3. **Copy bundle to iOS project:**
+   ```bash
+   cp ios-build/_expo/static/js/ios/*.hbc ios/sheetflow/main.jsbundle
+   ```
+
+4. **Add bundle to Xcode project:**
+   - Open `ios/sheetflow.xcworkspace` in Xcode
+   - Right-click on "sheetflow" folder → "Add Files to 'sheetflow'"
+   - Select `main.jsbundle` and ensure it's added to the target
+
+5. **Build and run:**
+   ```bash
+   npx expo run:ios --configuration Release --device
+   ```
+
+### Android Release Build
+
+1. **Configure Android SDK path:**
+   ```bash
+   echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+   ```
+
+2. **Build release APK:**
+   ```bash
+   cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+   ```
+
+3. **Install on device:**
+   ```bash
+   ./gradlew installRelease
+   ```
+
+### Alternative: EAS Build (Recommended for CI/CD)
+
+For cloud-based builds or when local builds are challenging:
+
+```bash
+# Install EAS CLI
+npm install -g @expo/eas-cli
+
+# Build for both platforms
+npx eas build --platform all --profile production
+
+# Or build locally
+npx eas build --platform ios --profile debug --local
+npx eas build --platform android --profile debug --local
+```
+
+**Note:** Release builds include the JavaScript bundle and run independently of Metro server, making them suitable for testing Firebase Auth persistence and production deployment.
+
+---
+
 ## Testing & Quality
 
 - **Linting:** Automated with ESLint and Prettier
