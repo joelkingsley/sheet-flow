@@ -3,7 +3,7 @@ import { type OSMDRef, OSMDView } from '@joelkingsley/react-native-osmd';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '../ThemedText';
 
 interface SheetMusicDisplayNativeProps {
@@ -11,10 +11,21 @@ interface SheetMusicDisplayNativeProps {
   style?: any;
 }
 
+type PlaybackState = 'play' | 'pause' | 'stop';
+
 const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ musicXML, style }) => {
   const [xmlString, setXmlString] = useState<string>('');
   const osmdRef = useRef<OSMDRef | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [playbackState, setPlaybackState] = useState<PlaybackState | undefined>();
+  const playback = useRef<PlaybackState>('stop');
+  
+  // Cursor configuration
+  const cursors = [
+    { type: 0, color: '#ff0000', alpha: 0.5, follow: true }, // red
+    { type: 0, color: '#00ff00', alpha: 0.5, follow: true }, // green
+  ];
+  const cursor = useRef(cursors[0]);
 
   // Zoom handler for buttons
   const handleZoom = useCallback((scale: number) => {
@@ -32,6 +43,43 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
   const zoomIn = () => handleZoom(Math.min(zoomLevel * 1.2, 3));
   const zoomOut = () => handleZoom(Math.max(zoomLevel / 1.2, 0.5));
   const resetZoom = () => handleZoom(1);
+
+  // Playback controls
+  const onPlayPause = useCallback(() => {
+    if (!osmdRef.current) return;
+    
+    switch (playback.current) {
+      case 'pause':
+      case 'stop':
+        osmdRef.current.play();
+        playback.current = 'play';
+        setPlaybackState('play');
+        break;
+      case 'play':
+        osmdRef.current.pause();
+        playback.current = 'pause';
+        setPlaybackState('pause');
+        break;
+    }
+  }, []);
+
+  const onStop = useCallback(() => {
+    if (!osmdRef.current) return;
+    
+    osmdRef.current.stop();
+    playback.current = 'stop';
+    setPlaybackState('stop');
+  }, []);
+
+  const onToggleCursor = useCallback(() => {
+    if (!osmdRef.current) return;
+    
+    const newCursor = cursors.filter((c) => c.color !== cursor.current?.color);
+    if (newCursor[0]?.color !== undefined) {
+      osmdRef.current.setCursorColor(newCursor[0].color);
+      cursor.current = newCursor[0];
+    }
+  }, [cursors]);
 
   // OSMD options
   const options = {
@@ -66,6 +114,8 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
 
   const onRender = () => {
     console.log('Sheet music rendered successfully with OSMDView');
+    setPlaybackState('stop');
+    playback.current = 'stop';
   };
 
   // Debug: log the XML string before rendering
@@ -75,22 +125,55 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
 
   return (
     <VStack style={[styles.container, style]} space="md">
-      {/* Zoom Controls */}
+      {/* Controls */}
       <Box style={styles.controlsContainer}>
-        <HStack space="md" style={styles.zoomControls}>
-          <Button size="sm" onPress={zoomOut}>
-            <ButtonText>-</ButtonText>
-          </Button>
-          <Text style={styles.zoomText}>
-            {Math.round(zoomLevel * 100)}%
-          </Text>
-          <Button size="sm" onPress={zoomIn}>
-            <ButtonText>+</ButtonText>
-          </Button>
-          <Button size="sm" variant="outline" onPress={resetZoom}>
-            <ButtonText>Reset</ButtonText>
-          </Button>
-        </HStack>
+        <VStack space="sm">
+          {/* Zoom Controls */}
+          <HStack space="md" style={styles.zoomControls}>
+            <Button size="sm" onPress={zoomOut}>
+              <ButtonText>-</ButtonText>
+            </Button>
+            <Text style={styles.zoomText}>
+              {Math.round(zoomLevel * 100)}%
+            </Text>
+            <Button size="sm" onPress={zoomIn}>
+              <ButtonText>+</ButtonText>
+            </Button>
+            <Button size="sm" variant="outline" onPress={resetZoom}>
+              <ButtonText>Reset</ButtonText>
+            </Button>
+          </HStack>
+          
+          {/* Playback Controls */}
+          {xmlString && (
+            <HStack space="md" style={styles.playbackControls}>
+              {playbackState === undefined ? (
+                <Box style={styles.loadingPlayback}>
+                  <ActivityIndicator size="small" />
+                  <Text style={styles.loadingText}>Preparing playback...</Text>
+                </Box>
+              ) : (
+                <>
+                  <Button 
+                    size="sm" 
+                    onPress={onPlayPause}
+                    bg={playbackState === 'play' ? '$red500' : '$green500'}
+                  >
+                    <ButtonText>
+                      {playbackState === 'play' ? '⏸️ Pause' : '▶️ Play'}
+                    </ButtonText>
+                  </Button>
+                  <Button size="sm" variant="outline" onPress={onStop}>
+                    <ButtonText>⏹️ Stop</ButtonText>
+                  </Button>
+                  <Button size="sm" variant="outline" onPress={onToggleCursor}>
+                    <ButtonText>🎯 Cursor</ButtonText>
+                  </Button>
+                </>
+              )}
+            </HStack>
+          )}
+        </VStack>
       </Box>
       
       {/* Sheet Music Display */}
@@ -130,6 +213,15 @@ const styles = StyleSheet.create({
   zoomControls: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  playbackControls: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingPlayback: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   zoomText: {
     fontSize: 16,
