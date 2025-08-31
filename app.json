@@ -30,7 +30,12 @@
     },
     "plugins": [
       "expo-router",
-      "@react-native-google-signin/google-signin",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "androidPackageName": "com.joelkingsleyr.sheetflow"
+        }
+      ],
       "expo-apple-authentication",
       [
         "expo-splash-screen",
