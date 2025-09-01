@@ -1,15 +1,17 @@
-import { auth } from '@/config/firebase';
-import { User, onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '@/config/supabase';
+import { Session, User } from '@supabase/supabase-js';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isLoading: boolean;
   signOutUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  session: null,
   isLoading: true,
   signOutUser: async () => {},
 });
@@ -28,57 +30,70 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('AuthProvider: Setting up auth state listener');
+    console.log('AuthProvider: Setting up Supabase auth state listener');
     
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    // Get initial session
+    const getInitialSession = async () => {
+      const { data: { session }, error } = await auth.getSession();
+      if (error) {
+        console.error('AuthProvider: Error getting initial session:', error);
+      } else {
+        console.log('AuthProvider: Initial session', {
+          isLoggedIn: !!session,
+          userId: session?.user?.id,
+          email: session?.user?.email,
+        });
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+      setIsLoading(false);
+    };
+
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = auth.onAuthStateChange((event, session) => {
       console.log('AuthProvider: Auth state changed', {
-        isLoggedIn: !!user,
-        uid: user?.uid,
-        email: user?.email,
-        isAnonymous: user?.isAnonymous,
-        providerId: user?.providerData?.[0]?.providerId
+        event,
+        isLoggedIn: !!session,
+        userId: session?.user?.id,
+        email: session?.user?.email,
       });
       
-      // Add additional debugging
-      if (user) {
-        console.log('AuthProvider: User is authenticated');
-        console.log('AuthProvider: User metadata:', {
-          creationTime: user.metadata.creationTime,
-          lastSignInTime: user.metadata.lastSignInTime
-        });
-      } else {
-        console.log('AuthProvider: No authenticated user found');
-      }
-      
-      setUser(user);
-      setIsLoading(false);
-    }, (error) => {
-      console.error('AuthProvider: Auth state change error:', error);
+      setSession(session);
+      setUser(session?.user ?? null);
       setIsLoading(false);
     });
 
     // Cleanup subscription on unmount
     return () => {
-      console.log('AuthProvider: Cleaning up auth state listener');
-      unsubscribe();
+      console.log('AuthProvider: Cleaning up Supabase auth state listener');
+      subscription.unsubscribe();
     };
   }, []);
 
   const signOutUser = async () => {
     try {
       console.log('AuthProvider: Signing out user');
-      await signOut(auth);
+      const { error } = await auth.signOut();
+      if (error) {
+        console.error('AuthProvider: Sign out error:', error);
+        throw error;
+      }
       console.log('AuthProvider: User signed out successfully');
     } catch (error) {
       console.error('AuthProvider: Sign out error:', error);
+      throw error;
     }
   };
 
   const value = {
     user,
+    session,
     isLoading,
     signOutUser,
   };

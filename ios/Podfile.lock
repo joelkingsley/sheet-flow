@@ -11,7 +11,7 @@ PODS:
     - ExpoModulesCore
   - Expo (51.0.39):
     - ExpoModulesCore
-  - ExpoAdapterGoogleSignIn (13.0.1):
+  - ExpoAdapterGoogleSignIn (13.3.1):
     - ExpoModulesCore
     - GoogleSignIn (~> 7.1)
     - React-Core
@@ -1346,7 +1346,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNGoogleSignin (13.0.1):
+  - RNGoogleSignin (13.3.1):
     - GoogleSignIn (~> 7.1)
     - React-Core
   - RNReanimated (3.10.1):
@@ -1679,7 +1679,7 @@ SPEC CHECKSUMS:
   DoubleConversion: 76ab83afb40bddeeee456813d9c04f67f78771b5
   EXConstants: 89d35611505a8ce02550e64e43cd05565da35f9a
   Expo: ed0a748eb6be0efd2c3df7f6de3f3158a14464c9
-  ExpoAdapterGoogleSignIn: 4ab81c954058c61d053d6750ffd0b2403862936e
+  ExpoAdapterGoogleSignIn: 2d18762fc21b37216b3afdf39ad4aea5352f22e9
   ExpoAppleAuthentication: 8a661b6f4936affafd830f983ac22463c936dad5
   ExpoAsset: 286fee7ba711ce66bf20b315e68106b13b8629fc
   ExpoBlur: 99901a4531f5d3ac4a19b362907b8f75da4ed9c8
@@ -1757,7 +1757,7 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: b6410dead2732b5c72a7fdb1ecb5651bbcf4674b
   RNCPicker: da0f1c9411208c1ca52bc98383db54a06e0a3862
   RNGestureHandler: 4ed68e3ad5ef719da597621a4fa282194e9e0a8e
-  RNGoogleSignin: b3fb27020830c3e92f92c71628533922d9b6876d
+  RNGoogleSignin: 576a84dd0407b912e7a0adf07492de9feb79e5d9
   RNReanimated: def444e044c354f38bb0a5926a8583ba19d944c1
   RNScreens: 02747ebee17d2e322af4ee383877367cf82a3cd6
   RNSVG: d39a9be65c439dfb061955f7615f1f71a51ecede

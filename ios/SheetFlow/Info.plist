@@ -29,7 +29,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>sheetflow</string>
+          <string>com.joelkingsleyr.sheetflow</string>
           <string>com.joelkingsleyr.sheetflow</string>
         </array>
       </dict>

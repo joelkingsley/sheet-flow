@@ -13,6 +13,7 @@ A cross-platform sheet music viewer built with React Native and Expo. Display an
 ## Architecture Overview
 
 - **Tech Stack:** [Expo](https://expo.dev/) (React Native), TypeScript, React Native WebView, OpenSheetMusicDisplay (OSMD)
+- **Authentication:** [Supabase Auth](https://supabase.com/auth) with OAuth support (Google, Apple)
 - **Routing:** Modular, file-based routing via Expo Router
 - **Music Rendering:** OSMD integrated seamlessly via WebView for performant, pixel-perfect notation
 - **State Management:** React Context for global state (extensible to Redux/Zustand for larger scale)
@@ -24,6 +25,7 @@ A cross-platform sheet music viewer built with React Native and Expo. Display an
 ## Features
 
 - 📱 **Universal Platform Support:** iOS, Android, and Web
+- 🔐 **Secure Authentication:** Email/password and OAuth (Google, Apple) via Supabase
 - 🎵 **MusicXML Rendering:** Professional, interactive sheet music display
 - 🎨 **Powered by OSMD:** High-fidelity music notation via OpenSheetMusicDisplay
 - 📖 **Multi-Score Library:** Browse works by Clementi, Beethoven, and more
@@ -127,48 +129,55 @@ Start developing by editing files in the **app** directory. This project uses [f
 
 ---
 
-## Social Authentication Setup
+## Authentication Setup
 
-The app supports Google and Apple Sign-In for user authentication. To enable these features:
+The app uses Supabase for secure authentication with support for email/password and OAuth providers (Google, Apple).
 
-### 1. Firebase Configuration
+### 1. Supabase Project Setup
 
-1. **Set up Firebase Project:**
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Create a new project or use existing one
-   - Enable Authentication service
-   - Add Google and Apple as sign-in providers
+1. **Create Supabase Project:**
+   - Go to [Supabase Dashboard](https://app.supabase.com/)
+   - Create a new project
+   - Wait for the project to be fully set up
 
-2. **Get Client IDs:**
-   - Go to Project Settings > General tab
-   - Scroll to "Your apps" section
-   - Note the Web Client ID from your web app configuration
-   - For iOS: Add an iOS app or check existing iOS app for Client ID
+2. **Get API Credentials:**
+   - Go to Project Settings > API
+   - Copy your Project URL and anon/public key
 
-### 2. Configure Client IDs
+3. **Configure Environment Variables:**
+   - Copy `.env.template` to `.env`
+   - Add your Supabase credentials:
+   ```bash
+   EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
 
-Update the file `config/auth.ts` with your actual client IDs:
+### 2. Enable OAuth Providers (Optional)
 
-```typescript
-export const GOOGLE_WEB_CLIENT_ID = 'your-actual-web-client-id.apps.googleusercontent.com';
-export const GOOGLE_IOS_CLIENT_ID = 'your-actual-ios-client-id.apps.googleusercontent.com';
-```
+**For Google OAuth:**
+1. Go to Authentication > Providers in Supabase Dashboard
+2. Enable Google provider
+3. Add your Google OAuth credentials
+4. Set redirect URL to: `com.joelkingsleyr.sheetflow://`
 
-### 3. Platform-specific Setup
+**For Apple OAuth:**
+1. Enable Apple provider in Supabase Dashboard
+2. Configure Apple Developer settings
+3. Set redirect URL to: `com.joelkingsleyr.sheetflow://`
 
-**For Android:**
-- Download `google-services.json` from Firebase Console
-- Place it in the root directory of your project
+### 3. Authentication Features
 
-**For iOS:**
-- Download `GoogleService-Info.plist` from Firebase Console
-- Add it to your iOS project when building with Xcode
+- ✅ Email/Password sign up and sign in
+- ✅ OAuth with Google and Apple
+- ✅ Session persistence across app restarts
+- ✅ Automatic token refresh
+- ✅ Secure logout
 
-### 4. Test Social Authentication
+### 4. Test Authentication
 
-- Google Sign-In works on Android and iOS
-- Apple Sign-In only works on iOS devices (not simulators in some cases)
-- Make sure to test on actual devices for full functionality
+- Email authentication works on all platforms
+- OAuth providers work best on physical devices
+- Web version supports all authentication methods
 
 ---
 

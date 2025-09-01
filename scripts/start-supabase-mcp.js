@@ -9,10 +9,12 @@ const fs = require('fs');
 
 // Read environment variables from .env file
 function loadEnvFile() {
-  const envPath = path.join(__dirname, '.env');
+  // Look for .env file in project root (parent directory of scripts)
+  const envPath = path.join(__dirname, '..', '.env');
   
   if (!fs.existsSync(envPath)) {
     console.error('Error: .env file not found. Please copy .env.template to .env and add your tokens.');
+    console.error('Expected .env file location:', envPath);
     process.exit(1);
   }
 

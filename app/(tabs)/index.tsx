@@ -137,7 +137,7 @@ export default function HomeScreen() {
         <HStack justifyContent="space-between" alignItems="center">
           <Text size="md" style={styles.welcomeText}>
             {user 
-              ? `Welcome back, ${user.isAnonymous ? 'Guest' : user.email}!`
+              ? `Welcome back, ${user.email || 'User'}!`
               : 'Welcome to Sheet Flow'
             }
           </Text>

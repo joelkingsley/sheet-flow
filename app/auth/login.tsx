@@ -1,5 +1,5 @@
 import { GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from '@/config/auth';
-import { auth } from '@/config/firebase';
+import { auth } from '@/config/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { AntDesign } from '@expo/vector-icons';
 import {
@@ -18,7 +18,6 @@ import {
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
-import { createUserWithEmailAndPassword, GoogleAuthProvider, OAuthProvider, signInAnonymously, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
@@ -60,30 +59,46 @@ export default function LoginScreen() {
     setIsLoading(true);
     
     try {
-      let userCredential;
+      let result;
       
       if (isSignUp) {
         // Sign up new user
-        userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        Alert.alert('Success', 'Account created successfully!', [
-          { text: 'OK', onPress: () => router.replace('/(tabs)') }
-        ]);
+        result = await auth.signUp(email, password);
+        if (result.error) {
+          throw result.error;
+        }
+        
+        if (result.data?.user && !result.data.session) {
+          Alert.alert(
+            'Check your email', 
+            'Please check your email for a confirmation link to complete your registration.',
+            [{ text: 'OK' }]
+          );
+        } else {
+          Alert.alert('Success', 'Account created successfully!', [
+            { text: 'OK', onPress: () => router.replace('/(tabs)') }
+          ]);
+        }
       } else {
         // Sign in existing user
-        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        result = await auth.signInWithPassword(email, password);
+        if (result.error) {
+          throw result.error;
+        }
+        
         Alert.alert('Success', 'Welcome back to Sheet Flow!', [
           { text: 'OK', onPress: () => router.replace('/(tabs)') }
         ]);
       }
       
-      console.log('User:', userCredential.user.email);
+      console.log('User:', result.data?.user?.email);
     } catch (error: any) {
       console.error('Auth error:', error);
       
       let errorMessage = 'Authentication failed';
       
-      switch (error.code) {
-        case 'auth/user-not-found':
+      switch (error.message) {
+        case 'User not found':
           errorMessage = 'No account found with this email. Would you like to create one?';
           Alert.alert('User Not Found', errorMessage, [
             { text: 'Cancel', style: 'cancel' },
@@ -91,21 +106,18 @@ export default function LoginScreen() {
           ]);
           setIsLoading(false);
           return;
-        case 'auth/wrong-password':
-          errorMessage = 'Incorrect password. Please try again.';
+        case 'Invalid login credentials':
+          errorMessage = 'Invalid email or password. Please try again.';
           break;
-        case 'auth/invalid-email':
+        case 'Invalid email':
           errorMessage = 'Please enter a valid email address.';
           break;
-        case 'auth/email-already-in-use':
+        case 'User already registered':
           errorMessage = 'This email is already registered. Try signing in instead.';
           setIsSignUp(false);
           break;
-        case 'auth/weak-password':
+        case 'Password should be at least 6 characters':
           errorMessage = 'Password should be at least 6 characters long.';
-          break;
-        case 'auth/network-request-failed':
-          errorMessage = 'Network error. Please check your connection.';
           break;
         default:
           errorMessage = error.message || 'Authentication failed';
@@ -117,44 +129,32 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGuestAccess = async () => {
-    setIsLoading(true);
-    
-    try {
-      const userCredential = await signInAnonymously(auth);
-      console.log('Anonymous user:', userCredential.user.uid);
-      Alert.alert('Success', 'Signed in as guest!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
-      ]);
-    } catch (error: any) {
-      console.error('Anonymous auth error:', error);
-      Alert.alert('Error', 'Failed to sign in as guest. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
+    const handleGoogleSignIn = async () => {
     setIsLoading(true);
     
     try {
       // Check if your device supports Google Play
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       
-      // Get the users ID token
+      // Get the user's ID token from Google
       const result = await GoogleSignin.signIn();
       
-      // Create a Google credential with the token
-      const googleCredential = GoogleAuthProvider.credential(result.data?.idToken);
+      if (!result.data?.idToken) {
+        throw new Error('No ID token received from Google');
+      }
+
+      // Use the Google ID token to sign in with Supabase
+      const { data, error } = await auth.signInWithIdToken('google', result.data.idToken);
       
-      // Sign-in the user with the credential
-      const userCredential = await signInWithCredential(auth, googleCredential);
+      if (error) {
+        throw error;
+      }
       
       Alert.alert('Success', 'Signed in with Google!', [
         { text: 'OK', onPress: () => router.replace('/(tabs)') }
       ]);
       
-      console.log('Google user:', userCredential.user.email);
+      console.log('Google user signed in successfully');
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       
@@ -164,8 +164,10 @@ export default function LoginScreen() {
         errorMessage = 'Sign-in was cancelled';
       } else if (error.code === 'play_services_not_available') {
         errorMessage = 'Google Play Services not available';
-      } else if (error.code === 'auth/network-request-failed') {
+      } else if (error.message?.includes('network')) {
         errorMessage = 'Network error. Please check your connection.';
+      } else {
+        errorMessage = error.message || errorMessage;
       }
       
       Alert.alert('Error', errorMessage);
@@ -185,21 +187,27 @@ export default function LoginScreen() {
         ],
       });
       
-      // Create an Apple credential with the token
-      const provider = new OAuthProvider('apple.com');
-      const firebaseCredential = provider.credential({
-        idToken: credential.identityToken || undefined,
-        rawNonce: undefined,
-      });
+      if (!credential.identityToken) {
+        throw new Error('No identity token received from Apple');
+      }
+
+      // Use the Apple identity token to sign in with Supabase
+      const { data, error } = await auth.signInWithIdToken(
+        'apple', 
+        credential.identityToken,
+        // Apple provides a nonce for security
+        credential.nonce
+      );
       
-      // Sign-in the user with the credential
-      const userCredential = await signInWithCredential(auth, firebaseCredential);
+      if (error) {
+        throw error;
+      }
       
       Alert.alert('Success', 'Signed in with Apple!', [
         { text: 'OK', onPress: () => router.replace('/(tabs)') }
       ]);
       
-      console.log('Apple user:', userCredential.user.email);
+      console.log('Apple user signed in successfully');
     } catch (error: any) {
       console.error('Apple sign-in error:', error);
       
@@ -207,8 +215,10 @@ export default function LoginScreen() {
       
       if (error.code === 'ERR_REQUEST_CANCELED') {
         errorMessage = 'Sign-in was cancelled';
-      } else if (error.code === 'auth/network-request-failed') {
+      } else if (error.message?.includes('network')) {
         errorMessage = 'Network error. Please check your connection.';
+      } else {
+        errorMessage = error.message || errorMessage;
       }
       
       Alert.alert('Error', errorMessage);
@@ -360,18 +370,6 @@ export default function LoginScreen() {
                     </Button>
                   )}
                 </VStack>
-              </VStack>
-
-              {/* Guest Access */}
-              <VStack space="md" alignItems="center">
-                <Text size="sm" color="$textLight500" $dark-color="$textDark500">
-                  or
-                </Text>
-                <Pressable onPress={handleGuestAccess}>
-                  <Text size="sm" color="$textLight600" $dark-color="$textDark400" textDecorationLine="underline">
-                    Continue as guest
-                  </Text>
-                </Pressable>
               </VStack>
             </VStack>
           </Center>

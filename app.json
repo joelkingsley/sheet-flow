@@ -5,14 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "sheetflow",
+    "scheme": "com.joelkingsleyr.sheetflow",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.joelkingsleyr.sheetflow",
-      "usesAppleSignIn": true,
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "bundleIdentifier": "com.joelkingsleyr.sheetflow"
     },
     "android": {
       "adaptiveIcon": {
@@ -20,8 +18,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.joelkingsleyr.sheetflow",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.joelkingsleyr.sheetflow"
     },
     "web": {
       "bundler": "metro",
