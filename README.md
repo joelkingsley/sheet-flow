@@ -294,10 +294,3 @@ npx eas build --platform android --profile debug --local
 
 ---
 
-## Join the Community
-
-- [Expo on GitHub](https://github.com/expo/expo)
-- [Expo Discord](https://chat.expo.dev)
-
----
-
