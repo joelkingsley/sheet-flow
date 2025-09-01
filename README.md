@@ -73,6 +73,40 @@ Add more files easily by updating the `musicFiles` array in [`sheet.tsx`](app/(t
 
 ---
 
+## Environment Setup
+
+### Environment Variables
+
+This project uses environment variables to keep sensitive information (like API tokens) out of the repository.
+
+1. **Copy the template:**
+   ```bash
+   cp .env.template .env
+   ```
+
+2. **Add your tokens to `.env`:**
+   ```bash
+   # GitHub Packages Authentication (for sponsors only)
+   GITHUB_TOKEN=your_github_token_here
+
+   # Supabase Access Token for MCP
+   SUPABASE_ACCESS_TOKEN=your_supabase_access_token_here
+   ```
+
+3. **Important:** Never commit the `.env` file. It's already included in `.gitignore`.
+
+### MCP (Model Context Protocol) Setup
+
+This project includes MCP servers for enhanced development capabilities:
+
+- **Gluestack UI Components**: For UI component assistance
+- **Firebase**: For Firebase services integration  
+- **Supabase**: For database and backend services
+
+The MCP configuration is in `.vscode/mcp.json` and automatically reads tokens from your `.env` file for security.
+
+---
+
 ## Get Started
 
 1. Install dependencies

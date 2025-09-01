@@ -8,6 +8,12 @@
     "type": "stdio",
     "command": "npx",
     "args": ["-y", "firebase-tools@latest", "experimental:mcp"]
+    },
+    "supabase": {
+      "command": "node",
+      "args": [
+        "/Users/joelkingsley/Developer/sheet-flow/scripts/start-supabase-mcp.js"
+      ]
     }
   }
 }
