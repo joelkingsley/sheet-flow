@@ -22,6 +22,7 @@ import { createUserWithEmailAndPassword, GoogleAuthProvider, OAuthProvider, sign
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
+    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -229,18 +230,11 @@ export default function LoginScreen() {
               
               {/* App Logo/Title */}
               <VStack space="lg" alignItems="center">
-                <Box
-                  width="$20"
-                  height="$20"
-                  bg="$primary500"
-                  borderRadius="$full"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Text fontSize="$2xl" fontWeight="$bold" color="$white">
-                    🎼
-                  </Text>
-                </Box>
+                <Image
+                  source={require('../../assets/images/adaptive-icon.png')}
+                  style={styles.appIcon}
+                  resizeMode="contain"
+                />
                 <Heading size="2xl" textAlign="center" color="$textLight900" $dark-color="$textDark50">
                   Sheet Flow
                 </Heading>
@@ -387,5 +381,10 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
+  },
+  appIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
 });
