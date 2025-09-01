@@ -50,12 +50,9 @@ A cross-platform sheet music viewer built with React Native and Expo. Display an
 
 ---
 
-## Screenshots
+## Screen Recordings
 
-<!-- Add actual image files in a 'screenshots' folder for best effect -->
-![SheetFlow on iOS](screenshots/sheetflow-ios.png)
-![SheetFlow on Android](screenshots/sheetflow-android.png)
-![SheetFlow on Web](screenshots/sheetflow-web.png)
+https://github.com/user-attachments/assets/38247e2c-9747-4073-a851-3867d95bf64e
 
 ---
 
