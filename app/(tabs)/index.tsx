@@ -12,7 +12,7 @@ import {
 } from '@gluestack-ui/themed';
 import { router } from 'expo-router';
 import React from 'react';
-import { Alert, FlatList, StyleSheet } from 'react-native';
+import { Alert, FlatList, Image, StyleSheet } from 'react-native';
 
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -129,7 +129,24 @@ export default function HomeScreen() {
   const renderHeader = () => (
     <VStack space="lg" style={styles.headerContainer}>
       <Box style={styles.titleContainer}>
-        <Heading size="2xl">Sheet Flow</Heading>
+        <HStack space="md" alignItems="center">
+          <Image
+            source={require('../../assets/images/adaptive-icon.png')}
+            style={styles.appIcon}
+            resizeMode="contain"
+          />
+          <VStack space="xs" flex={1}>
+            <Heading size="2xl" style={{ fontStyle: 'italic' }}>SheetFlow</Heading>
+            <Text 
+              size="md" 
+              style={styles.subtitle}
+              color="$textLight600" 
+              $dark-color="$textDark400"
+            >
+              Your personal sheet music reader
+            </Text>
+          </VStack>
+        </HStack>
       </Box>
       
       {/* User Authentication Section */}
@@ -192,6 +209,15 @@ const styles = StyleSheet.create({
     marginTop: 40,
     marginBottom: 16,
     paddingHorizontal: 4,
+  },
+  appIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  subtitle: {
+    marginTop: 4,
+    opacity: 0.7,
   },
   userSection: {
     marginHorizontal: 4,
