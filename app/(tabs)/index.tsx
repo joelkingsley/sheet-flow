@@ -13,7 +13,7 @@ import {
   VStack
 } from '@gluestack-ui/themed';
 import { router } from 'expo-router';
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, FlatList, Image, StyleSheet } from 'react-native';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -243,6 +243,9 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginBottom: 16,
+    paddingTop: 16,
+    paddingLeft: 16,
+    paddingRight: 16
   },
   titleContainer: {
     marginTop: 40,
