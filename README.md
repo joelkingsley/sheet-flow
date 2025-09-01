@@ -26,8 +26,13 @@ A cross-platform sheet music viewer built with React Native and Expo. Display an
 - 📱 **Universal Platform Support:** iOS, Android, and Web
 - 🎵 **MusicXML Rendering:** Professional, interactive sheet music display
 - 🎨 **Powered by OSMD:** High-fidelity music notation via OpenSheetMusicDisplay
-- 📖 **Multi-Score Library:** Browse works by Clementi, Beethoven, and more
-- 🎹 **Built for Musicians:** Optimized UI/UX for practice and performance
+- 🎹 **Audio Playback Controls:** Play, pause, stop, and loop sheet music with visual cursor tracking
+- 🔄 **Loop Playback:** Automatically repeat sheet music for practice sessions
+- 🎯 **Interactive Cursor:** Visual tracking of playback position with customizable colors
+- 🔍 **Zoom Controls:** Smooth zoom in/out functionality for detailed viewing
+- 🔐 **Authentication:** Google Sign-In, Apple Sign-In, and guest access support
+- 📖 **Multi-Score Library:** Browse classical works and hymns with difficulty ratings
+- 🏷️ **Difficulty Badges:** Easy, Medium, and Hard ratings for each piece
 - 📲 **Responsive Design:** Mobile-first, but scalable for desktop/tablet
 - 🧩 **Easy Extensibility:** Add new scores or features with minimal code changes
 
@@ -36,7 +41,10 @@ A cross-platform sheet music viewer built with React Native and Expo. Display an
 ## Technical Highlights
 
 - **Web-Native Integration:** Advanced use of React Native WebView to embed and interact with a web-based music notation engine, overcoming cross-platform rendering and communication challenges.
+- **Audio Playback System:** Integrated OSMD playback manager with custom loop functionality, cursor tracking, and responsive control interface.
+- **Cross-Platform Authentication:** Firebase Auth with Google Sign-In, Apple Sign-In, and anonymous access, properly configured for iOS, Android, and Web.
 - **Performance Optimization:** Efficient MusicXML parsing and rendering for large scores, with lazy loading and caching strategies.
+- **UI Component Library:** Leveraging Gluestack UI for consistent, accessible, and responsive components across platforms.
 - **Responsive Sheet Music Layout:** Custom hooks and layout logic ensure readable sheet music on any screen size.
 - **Modular File Structure:** File-based routing and separation of concerns for maintainability and scalability.
 
@@ -55,55 +63,39 @@ A cross-platform sheet music viewer built with React Native and Expo. Display an
 
 The app uses a WebView component to render MusicXML files through OpenSheetMusicDisplay (OSMD), a powerful JavaScript library for music notation. This approach allows us to display complex sheet music in a native environment with minimal performance overhead and maximum visual fidelity.
 
-- **Main Sheet Music Logic:** See [`app/(tabs)/sheet.tsx`](app/(tabs)/sheet.tsx)
-  - MusicXML file management
-  - WebView integration and communication
-  - Cross-platform dropdown/picker components
-  - Responsive layout handling
+### Key Components:
+
+- **Home Screen** ([`app/(tabs)/index.tsx`](app/(tabs)/index.tsx)): 
+  - Browse available sheet music with difficulty ratings
+  - User authentication status and controls
+  - Clean, card-based interface with FlatList for performance
+
+- **Sheet Music Display** ([`app/sheet/index.tsx`](app/sheet/index.tsx) & [`components/sheetMusicDisplay/`](components/sheetMusicDisplay/)):
+  - MusicXML file loading and parsing
+  - WebView integration with OSMD
+  - Cross-platform file handling (web vs native)
+  - Audio playback controls with loop functionality
+  - Zoom controls and cursor customization
+
+- **Authentication** ([`contexts/AuthContext.tsx`](contexts/AuthContext.tsx) & [`app/auth/login.tsx`](app/auth/login.tsx)):
+  - Firebase Authentication integration
+  - Google Sign-In with MaterialIcons branding
+  - Apple Sign-In (iOS only) with proper branding
+  - Guest access for quick usage
+  - Persistent authentication state
 
 ---
 
 ## Sheet Music Files
 
 Currently included:
-- **Clementi**: Sonatina Op.36 No.1 Part 2 (Andante)
-- **Beethoven**: An die ferne Geliebte Op.98 (Page 1)
+- **Clementi**: Sonatina Op.36 No.1 Part 2 (Andante) - Easy
+- **Beethoven**: An die ferne Geliebte Op.98 (Page 1) - Hard
+- **Mendelssohn**: Op. 98 - Medium
+- **Traditional**: Original Silent Night - Easy
+- **Traditional**: To God Be The Glory - Easy
 
-Add more files easily by updating the `musicFiles` array in [`sheet.tsx`](app/(tabs)/sheet.tsx).
-
----
-
-## Environment Setup
-
-### Environment Variables
-
-This project uses environment variables to keep sensitive information (like API tokens) out of the repository.
-
-1. **Copy the template:**
-   ```bash
-   cp .env.template .env
-   ```
-
-2. **Add your tokens to `.env`:**
-   ```bash
-   # GitHub Packages Authentication (for sponsors only)
-   GITHUB_TOKEN=your_github_token_here
-
-   # Supabase Access Token for MCP
-   SUPABASE_ACCESS_TOKEN=your_supabase_access_token_here
-   ```
-
-3. **Important:** Never commit the `.env` file. It's already included in `.gitignore`.
-
-### MCP (Model Context Protocol) Setup
-
-This project includes MCP servers for enhanced development capabilities:
-
-- **Gluestack UI Components**: For UI component assistance
-- **Firebase**: For Firebase services integration  
-- **Supabase**: For database and backend services
-
-The MCP configuration is in `.vscode/mcp.json` and automatically reads tokens from your `.env` file for security.
+Each piece includes difficulty ratings (Easy, Medium, Hard) displayed as colored badges. Add more files easily by updating the `musicFiles` array in [`app/(tabs)/index.tsx`](app/(tabs)/index.tsx) and [`app/sheet/index.tsx`](app/sheet/index.tsx).
 
 ---
 
@@ -129,7 +121,7 @@ Start developing by editing files in the **app** directory. This project uses [f
 
 ## Social Authentication Setup
 
-The app supports Google and Apple Sign-In for user authentication. To enable these features:
+The app supports Google Sign-In, Apple Sign-In, and guest access for user authentication. To enable these features:
 
 ### 1. Firebase Configuration
 
@@ -138,6 +130,7 @@ The app supports Google and Apple Sign-In for user authentication. To enable the
    - Create a new project or use existing one
    - Enable Authentication service
    - Add Google and Apple as sign-in providers
+   - Enable Anonymous authentication for guest access
 
 2. **Get Client IDs:**
    - Go to Project Settings > General tab
@@ -164,10 +157,19 @@ export const GOOGLE_IOS_CLIENT_ID = 'your-actual-ios-client-id.apps.googleuserco
 - Download `GoogleService-Info.plist` from Firebase Console
 - Add it to your iOS project when building with Xcode
 
-### 4. Test Social Authentication
+### 4. Authentication Features
+
+- **Google Sign-In**: Available on Android and iOS with proper Google branding
+- **Apple Sign-In**: iOS-only with Apple branding (requires actual device for testing)
+- **Guest Access**: Anonymous authentication for quick app exploration
+- **Persistent Sessions**: Users remain logged in across app restarts
+- **Profile Management**: View user email and sign out functionality
+
+### 5. Test Social Authentication
 
 - Google Sign-In works on Android and iOS
 - Apple Sign-In only works on iOS devices (not simulators in some cases)
+- Guest access works on all platforms
 - Make sure to test on actual devices for full functionality
 
 ---
@@ -261,11 +263,15 @@ npx eas build --platform android --profile debug --local
 
 ## Roadmap
 
-- 🎧 MIDI playback and interactive practice tools
+- 🎧 Enhanced MIDI playback with tempo controls and metronome
 - ✏️ User annotations and cloud sync
+- 📚 Personal sheet music collections and favorites
 - 🎼 Expanded score library: more genres & composers
 - ⚡ Performance improvements for very large scores
-- 🧑‍🤝‍🧑 Collaborative features
+- 🧑‍🤝‍🧑 Collaborative features and sharing
+- 📊 Practice tracking and progress analytics
+- 🎵 Transposition and key signature adjustments
+- 📱 Offline mode and sheet music caching
 
 ---
 
@@ -274,6 +280,10 @@ npx eas build --platform android --profile debug --local
 - **React Native WebView:** For rendering HTML/JavaScript content in the native app
 - **OpenSheetMusicDisplay:** For music notation rendering (loaded via CDN)
 - **Expo:** For cross-platform development & deployment
+- **Firebase:** Authentication and backend services
+- **Gluestack UI:** Comprehensive component library for consistent UI/UX
+- **React Native Google Sign-In:** Google authentication integration
+- **Expo Apple Authentication:** Apple Sign-In for iOS devices
 
 ---
 
