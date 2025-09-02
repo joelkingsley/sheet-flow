@@ -39,6 +39,12 @@
           <string>com.googleusercontent.apps.79144339891-1ht3a010s7vtd7oap4ettvg2ur8ant4c</string>
         </array>
       </dict>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>exp+sheet-flow</string>
+        </array>
+      </dict>
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>
