@@ -267,6 +267,17 @@ npx eas build --platform android --profile production --local
 - Use `development` profile for development builds, not `debug`
 - Development builds require the Expo Go app or a custom development client
 - Production builds are standalone and don't require additional apps
+- **GitHub Packages Authentication:** If using private GitHub packages, configure authentication:
+  1. Create a GitHub Personal Access Token with `read:packages` permission at: https://github.com/settings/tokens
+  2. **For local development:** Set environment variable: `export GITHUB_TOKEN=your-token-here` (add to ~/.zshrc for persistence)
+  3. **For EAS Build:** Update `.npmrc` file to include the token directly:
+     ```
+     @joelkingsley:registry=https://npm.pkg.github.com
+     //npm.pkg.github.com/:_authToken=your-actual-token-here
+     ```
+  4. **Security Note:** The `.npmrc` with direct token should not be committed to version control in production
+  5. Verify local access: `npm install` should work without authentication errors
+  6. Alternative: Use public npm packages instead of private GitHub packages
 
 ---
 

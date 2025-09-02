@@ -19,7 +19,10 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "GITHUB_TOKEN": "from-secret"
+      }
     }
   },
   "submit": {
