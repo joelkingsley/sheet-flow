@@ -225,19 +225,48 @@ For production-ready standalone builds that don't require a Metro bundler:
 
 For cloud-based builds or when local builds are challenging:
 
+**First-time setup:**
 ```bash
 # Install EAS CLI
 npm install -g @expo/eas-cli
 
+# Login to Expo
+npx eas login
+
+# Configure EAS Build
+npx eas build:configure
+```
+
+**For Development Builds (with expo-dev-client):**
+```bash
+# Install expo-dev-client for development builds
+npx expo install expo-dev-client
+
+# Build development client
+npx eas build --platform all --profile development
+
+# Or build locally
+npx eas build --platform ios --profile development --local
+npx eas build --platform android --profile development --local
+```
+
+**For Production Builds:**
+```bash
 # Build for both platforms
 npx eas build --platform all --profile production
 
 # Or build locally
-npx eas build --platform ios --profile debug --local
-npx eas build --platform android --profile debug --local
+npx eas build --platform ios --profile production --local
+npx eas build --platform android --profile production --local
 ```
 
 **Note:** Release builds include the JavaScript bundle and run independently of Metro server, making them suitable for testing Firebase Auth persistence and production deployment.
+
+**Troubleshooting EAS Build:**
+- For development builds, ensure `expo-dev-client` is installed: `npx expo install expo-dev-client`
+- Use `development` profile for development builds, not `debug`
+- Development builds require the Expo Go app or a custom development client
+- Production builds are standalone and don't require additional apps
 
 ---
 
