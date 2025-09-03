@@ -2,8 +2,6 @@ import {
   Badge,
   BadgeText,
   Box,
-  Button,
-  ButtonText,
   Heading,
   HStack,
   Input,
@@ -13,14 +11,16 @@ import {
   VStack
 } from '@gluestack-ui/themed';
 import { router } from 'expo-router';
-import React, { useMemo, useState } from 'react';
-import { Alert, FlatList, Image, SafeAreaView, StyleSheet } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import { Animated, FlatList, Image, SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomeScreen() {
-  const { user, signOutUser } = useAuth();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const HEADER_SCROLL_DISTANCE = 120;
   
   // Helper function to get difficulty badge styling
   const getDifficultyBadge = (difficulty: 'easy' | 'medium' | 'hard') => {
@@ -94,26 +94,9 @@ export default function HomeScreen() {
     router.push(`/sheet?fileId=${fileId}`);
   };
 
-  const handleSignOut = () => {
-    Alert.alert(
-      'Sign Out', 
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Sign Out', 
-          style: 'destructive',
-          onPress: async () => {
-            await signOutUser();
-            router.replace('/auth/login');
-          }
-        }
-      ]
-    );
-  };
-
-  const handleSignIn = () => {
-    router.push('/auth/login');
+  const handleProfilePress = () => {
+    // Navigate to the library tab
+    router.push('/(tabs)/library');
   };
 
   const renderSheetItem = React.useCallback(({ item }: { item: typeof musicFiles[0] }) => {
@@ -144,53 +127,33 @@ export default function HomeScreen() {
   }, []);
 
   const renderHeader = React.useCallback(() => (
-    <VStack space="lg" style={styles.headerContainer}>
+    <VStack space="lg" style={styles.scrollableHeaderContainer}>
       <Box style={styles.titleContainer}>
-        <HStack space="md" alignItems="center">
-          <Image
-            source={require('../../assets/images/adaptive-icon.png')}
-            style={styles.appIcon}
-            resizeMode="contain"
-          />
-          <VStack space="xs" flex={1}>
-            <Heading size="2xl" style={{ fontStyle: 'italic' }}>SheetFlow</Heading>
-            <Text 
-              size="md" 
-              style={styles.subtitle}
-              color="$textLight600" 
-              $dark-color="$textDark400"
-            >
-              Your personal sheet music reader
-            </Text>
-          </VStack>
+        <HStack space="md" alignItems="center" justifyContent="space-between">
+          <Heading size="2xl" style={styles.homeTitle}>Home</Heading>
+          
+          {/* Profile Icon */}
+          <TouchableOpacity onPress={handleProfilePress} style={styles.profileButton}>
+            <Image
+              source={
+                user?.photoURL 
+                  ? { uri: user.photoURL }
+                  : require('../../assets/images/adaptive-icon.png')
+              }
+              style={styles.profileIcon}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
         </HStack>
       </Box>
     </VStack>
-  ), []);
+  ), [handleProfilePress, user]);
 
   const renderScrollableHeader = React.useCallback(() => (
     <VStack space="lg">
-      {/* User Authentication Section */}
-      <Box style={styles.userSection}>
-        <HStack justifyContent="space-between" alignItems="center">
-          <Text size="md" style={styles.welcomeText}>
-            {user 
-              ? `Welcome back, ${user.isAnonymous ? 'Guest' : user.email}!`
-              : 'Welcome to Sheet Flow'
-            }
-          </Text>
-          {user ? (
-            <Button size="sm" action="negative" onPress={handleSignOut}>
-              <ButtonText>Sign Out</ButtonText>
-            </Button>
-          ) : (
-            <Button size="sm" action="primary" onPress={handleSignIn}>
-              <ButtonText>Sign In</ButtonText>
-            </Button>
-          )}
-        </HStack>
-      </Box>
-
+      {/* Title and Profile Icon - Now scrollable */}
+      {renderHeader()}
+      
       {/* Search Bar */}
       <Box style={styles.searchContainer}>
         <Input>
@@ -212,16 +175,26 @@ export default function HomeScreen() {
         </Heading>
       </Box>
     </VStack>
-  ), [user, handleSignOut, searchQuery]);
+  ), [searchQuery, renderHeader]);
+
+  // Calculate the opacity for the sticky header
+  const stickyHeaderOpacity = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const stickyHeaderTranslateY = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE],
+    outputRange: [-50, 0],
+    extrapolate: 'clamp',
+  });
 
   return (
     <SafeAreaView style={styles.container}>
       <Box style={styles.innerContainer}>
         <VStack flex={1}>
-          {/* Fixed Header - Only App Title */}
-          {renderHeader()}
-          
-          {/* Scrollable Content - Everything from Welcome onwards */}
+          {/* Scrollable Content */}
           <FlatList
             data={filteredMusicFiles}
             renderItem={renderSheetItem}
@@ -232,7 +205,27 @@ export default function HomeScreen() {
             showsVerticalScrollIndicator={true}
             keyboardShouldPersistTaps="handled"
             removeClippedSubviews={false}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: false }
+            )}
+            scrollEventThrottle={16}
           />
+          
+          {/* Sticky Header - Appears when scrolling */}
+          <Animated.View 
+            style={[
+              styles.stickyHeader,
+              {
+                opacity: stickyHeaderOpacity,
+                transform: [{ translateY: stickyHeaderTranslateY }],
+              }
+            ]}
+          >
+            <Box style={styles.stickyHeaderContent}>
+              <Heading size="lg" style={styles.stickyTitle}>Home</Heading>
+            </Box>
+          </Animated.View>
         </VStack>
       </Box>
     </SafeAreaView>
@@ -251,38 +244,56 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 20,
   },
-  headerContainer: {
-    paddingTop: 16,
+  scrollableHeaderContainer: {
+    paddingTop: 60,
     paddingLeft: 16,
     paddingRight: 16,
-    paddingBottom: 8,
+    paddingBottom: 16,
   },
   titleContainer: {
-    marginTop: 16,
     marginBottom: 16,
     paddingHorizontal: 4,
   },
-  appIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  homeTitle: {
+    fontWeight: 'bold',
   },
-  subtitle: {
-    marginTop: 4,
-    opacity: 0.7,
+  profileButton: {
+    padding: 2,
   },
-  userSection: {
-    marginHorizontal: 20,
-    marginVertical: 8,
-    padding: 16,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    borderWidth: 1,
+  profileIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
     borderColor: '#e9ecef',
   },
-  welcomeText: {
-    flex: 1,
-    marginRight: 12,
+  stickyHeader: {
+    position: 'absolute',
+    top: -44, // Position above the visible area to cover status bar
+    left: 0,
+    right: 0,
+    paddingTop: 44 + 44, // Status bar height + additional padding for content
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 1000,
+  },
+  stickyHeaderContent: {
+    paddingTop: 8,
+    paddingBottom: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  stickyTitle: {
+    fontWeight: 'bold',
   },
   listContainer: {
     marginHorizontal: 20,
