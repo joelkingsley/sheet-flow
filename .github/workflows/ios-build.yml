@@ -19,8 +19,14 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
+        registry-url: 'https://npm.pkg.github.com'
+        
+    - name: Configure npm for GitHub Package Registry
+      run: |
+        echo "@joelkingsley:registry=https://npm.pkg.github.com" >> .npmrc
+        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
         
     - name: Setup Ruby for CocoaPods
       uses: ruby/setup-ruby@v1
@@ -145,5 +151,7 @@ jobs:
     - name: Clean up keychain and provisioning profile
       if: ${{ always() }}
       run: |
-        security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
-        rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
+        # Clean up keychain (ignore errors if it doesn't exist)
+        security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
+        # Clean up provisioning profile (ignore errors if it doesn't exist)  
+        rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision || true
