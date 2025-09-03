@@ -291,6 +291,7 @@ const styles = StyleSheet.create({
   },
   flatList: {
     flex: 1,
+    marginBottom: 80,
   },
   pressableItem: {
     marginBottom: 8,
