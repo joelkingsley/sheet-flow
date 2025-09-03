@@ -26,7 +26,7 @@ jobs:
     - name: Configure npm for GitHub Package Registry
       run: |
         echo "@joelkingsley:registry=https://npm.pkg.github.com" >> .npmrc
-        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+        echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
         
     - name: Setup Ruby for CocoaPods
       uses: ruby/setup-ruby@v1
