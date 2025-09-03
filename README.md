@@ -1,3 +1,5 @@
+[![iOS Build and Archive](https://github.com/joelkingsley/sheet-flow/actions/workflows/ios-build.yml/badge.svg)](https://github.com/joelkingsley/sheet-flow/actions/workflows/ios-build.yml)
+
 # Sheet Flow 🎼
 
 A cross-platform sheet music viewer built with React Native and Expo. Display and interact with MusicXML files using [OpenSheetMusicDisplay (OSMD)](https://github.com/opensheetmusicdisplay) in a native mobile or web app.
