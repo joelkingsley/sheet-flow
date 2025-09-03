@@ -3,7 +3,7 @@ import { type OSMDRef, OSMDView } from '@joelkingsley/react-native-osmd';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Dimensions, SafeAreaView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '../ThemedText';
 
 interface SheetMusicDisplayNativeProps {
@@ -19,6 +19,12 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
   const [zoomLevel, setZoomLevel] = useState(0.5);
   const [playbackState, setPlaybackState] = useState<PlaybackState | undefined>();
   const playback = useRef<PlaybackState>('stop');
+  const [orientation, setOrientation] = useState(
+    Dimensions.get('window').width > Dimensions.get('window').height ? 'landscape' : 'portrait'
+  );
+  const [renderKey, setRenderKey] = useState(0);
+  const [isRerendering, setIsRerendering] = useState(false);
+  const preservedPlaybackState = useRef<PlaybackState>('stop');
   
   // Cursor configuration
   const cursors = [
@@ -112,6 +118,37 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
     return () => { isMounted = false; };
   }, [musicXML]);
 
+  // Listen for orientation changes
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      const newOrientation = window.width > window.height ? 'landscape' : 'portrait';
+      if (newOrientation !== orientation) {
+        setOrientation(newOrientation);
+        
+        // Force OSMD to re-render without remounting the WebView
+        if (osmdRef.current && xmlString) {
+          console.log('Handling orientation change:', newOrientation);
+          
+          setTimeout(() => {
+            // Inject JavaScript to force OSMD to re-render with new dimensions
+            const webViewRef = (osmdRef.current as any)?._component?._nativeTag;
+            if (osmdRef.current) {
+              // Use the existing setZoom method to trigger a re-render
+              // This will cause OSMD to recalculate layout without losing playback state
+              const currentZoom = zoomLevel;
+              osmdRef.current.setZoom(currentZoom * 1.001); // Tiny change to trigger re-render
+              setTimeout(() => {
+                osmdRef.current?.setZoom(currentZoom); // Restore original zoom
+              }, 50);
+            }
+          }, 100);
+        }
+      }
+    });
+
+    return () => subscription?.remove();
+  }, [orientation, xmlString, zoomLevel]);
+
   const onRender = () => {
     console.log('Sheet music rendered successfully with OSMDView');
     setPlaybackState('stop');
@@ -139,11 +176,15 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
     console.log('SheetMusicDisplayNative xmlString length:', xmlString.length);
   }, [xmlString]);
 
+  // Determine if controls should be in a horizontal layout (landscape)
+  const isLandscape = orientation === 'landscape';
+  const ControlsContainer = isLandscape ? HStack : VStack;
+
   return (
     <VStack style={[styles.container, style]} space="md">
       {/* Controls */}
-      <Box style={styles.controlsContainer}>
-        <VStack space="sm">
+      <Box style={[styles.controlsContainer, isLandscape && styles.controlsContainerLandscape]}>
+        <ControlsContainer space={isLandscape ? "xl" : "sm"}>
           {/* Zoom Controls */}
           <HStack space="md" style={styles.zoomControls}>
             <Button size="sm" onPress={zoomOut}>
@@ -189,7 +230,7 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
               )}
             </HStack>
           )}
-        </VStack>
+        </ControlsContainer>
       </Box>
       
       {/* Sheet Music Display */}
@@ -225,6 +266,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
+  },
+  controlsContainerLandscape: {
+    paddingVertical: 8,
   },
   zoomControls: {
     alignItems: 'center',

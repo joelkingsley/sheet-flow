@@ -14,7 +14,7 @@ import {
 } from '@gluestack-ui/themed';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Alert, FlatList, Image, StyleSheet } from 'react-native';
+import { Alert, FlatList, Image, SafeAreaView, StyleSheet } from 'react-native';
 
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -165,7 +165,11 @@ export default function HomeScreen() {
           </VStack>
         </HStack>
       </Box>
-      
+    </VStack>
+  ), []);
+
+  const renderScrollableHeader = React.useCallback(() => (
+    <VStack space="lg">
       {/* User Authentication Section */}
       <Box style={styles.userSection}>
         <HStack justifyContent="space-between" alignItems="center">
@@ -186,6 +190,21 @@ export default function HomeScreen() {
           )}
         </HStack>
       </Box>
+
+      {/* Search Bar */}
+      <Box style={styles.searchContainer}>
+        <Input>
+          <InputField
+            placeholder="Search by title, composer, or difficulty..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="search"
+            blurOnSubmit={false}
+          />
+        </Input>
+      </Box>
       
       <Box style={styles.listContainer}>
         <Heading size="lg" style={styles.sectionTitle}>
@@ -193,42 +212,30 @@ export default function HomeScreen() {
         </Heading>
       </Box>
     </VStack>
-  ), [user, handleSignOut]);
+  ), [user, handleSignOut, searchQuery]);
 
   return (
-    <Box style={styles.container}>
-      <VStack flex={1}>
-        {/* Fixed Header */}
-        {renderHeader()}
-        
-        {/* Search Bar - Fixed outside FlatList */}
-        <Box style={styles.searchContainer}>
-          <Input>
-            <InputField
-              placeholder="Search by title, composer, or difficulty..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="search"
-              blurOnSubmit={false}
-            />
-          </Input>
-        </Box>
-        
-        {/* Music List */}
-        <FlatList
-          data={filteredMusicFiles}
-          renderItem={renderSheetItem}
-          keyExtractor={(item) => item.id}
-          style={styles.flatList}
-          contentContainerStyle={styles.musicListContainer}
-          showsVerticalScrollIndicator={true}
-          keyboardShouldPersistTaps="handled"
-          removeClippedSubviews={false}
-        />
-      </VStack>
-    </Box>
+    <SafeAreaView style={styles.container}>
+      <Box style={styles.innerContainer}>
+        <VStack flex={1}>
+          {/* Fixed Header - Only App Title */}
+          {renderHeader()}
+          
+          {/* Scrollable Content - Everything from Welcome onwards */}
+          <FlatList
+            data={filteredMusicFiles}
+            renderItem={renderSheetItem}
+            keyExtractor={(item) => item.id}
+            ListHeaderComponent={renderScrollableHeader}
+            style={styles.flatList}
+            contentContainerStyle={styles.musicListContainer}
+            showsVerticalScrollIndicator={true}
+            keyboardShouldPersistTaps="handled"
+            removeClippedSubviews={false}
+          />
+        </VStack>
+      </Box>
+    </SafeAreaView>
   );
 }
 
@@ -237,18 +244,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+  innerContainer: {
+    flex: 1,
+  },
   contentContainer: {
     padding: 16,
     paddingBottom: 20,
   },
   headerContainer: {
-    marginBottom: 16,
     paddingTop: 16,
     paddingLeft: 16,
-    paddingRight: 16
+    paddingRight: 16,
+    paddingBottom: 8,
   },
   titleContainer: {
-    marginTop: 40,
+    marginTop: 16,
     marginBottom: 16,
     paddingHorizontal: 4,
   },
@@ -262,7 +272,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   userSection: {
-    marginHorizontal: 4,
+    marginHorizontal: 20,
     marginVertical: 8,
     padding: 16,
     backgroundColor: '#f8f9fa',
@@ -275,7 +285,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   listContainer: {
-    marginHorizontal: 4,
+    marginHorizontal: 20,
     marginBottom: 8,
   },
   sectionTitle: {
@@ -283,7 +293,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginHorizontal: 20,
-    marginBottom: 8,
+    marginBottom: 16,
   },
   musicListContainer: {
     padding: 16,
@@ -291,7 +301,7 @@ const styles = StyleSheet.create({
   },
   flatList: {
     flex: 1,
-    marginBottom: 80,
+    marginBottom: 50,
   },
   pressableItem: {
     marginBottom: 8,
