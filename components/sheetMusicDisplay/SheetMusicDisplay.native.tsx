@@ -16,7 +16,7 @@ type PlaybackState = 'play' | 'pause' | 'stop';
 const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ musicXML, style }) => {
   const [xmlString, setXmlString] = useState<string>('');
   const osmdRef = useRef<OSMDRef | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(0.5);
   const [playbackState, setPlaybackState] = useState<PlaybackState | undefined>();
   const playback = useRef<PlaybackState>('stop');
   
@@ -116,6 +116,22 @@ const SheetMusicDisplayNative: React.FC<SheetMusicDisplayNativeProps> = ({ music
     console.log('Sheet music rendered successfully with OSMDView');
     setPlaybackState('stop');
     playback.current = 'stop';
+    
+    // Set initial zoom to 50%
+    osmdRef.current?.setZoom(0.5);
+    // Always attempt to set zoom after a delay, as methods may not be immediately available
+    setTimeout(() => {
+      if (osmdRef.current && osmdRef.current.setZoom) {
+        try {
+          osmdRef.current.setZoom(0.5);
+          setZoomLevel(0.5);
+        } catch (error) {
+          console.warn('Error setting initial zoom:', error);
+        }
+      } else {
+        console.log('OSMD setZoom method not yet available after timeout');
+      }
+    }, 100);
   };
 
   // Debug: log the XML string before rendering
