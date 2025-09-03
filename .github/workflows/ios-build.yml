@@ -1,3 +1,31 @@
+# iOS Build and Archive Workflow
+#
+# SETUP REQUIRED:
+# 
+# 1. Repository Secrets (Settings > Secrets and variables > Actions > Secrets):
+#    - NPM_TOKEN: Personal Access Token for GitHub Package Registry (with packages:read permission)
+#    - BUILD_CERTIFICATE_BASE64: Base64 encoded .p12 certificate file
+#    - P12_PASSWORD: Password for the .p12 certificate
+#    - BUILD_PROVISION_PROFILE_BASE64: Base64 encoded .mobileprovision file
+#    - KEYCHAIN_PASSWORD: Any password for temporary keychain (e.g., "temppassword123")
+#    - APPLE_ID_PASSWORD: App-specific password for Apple ID
+#
+# 2. Repository Variables (Settings > Secrets and variables > Actions > Variables):
+#    - APPLE_TEAM_ID: Your Apple Developer Team ID (found in Apple Developer Account)
+#    - APPLE_ID: Your Apple ID email address
+#
+# 3. How to generate certificates and provisioning profiles:
+#    a) Generate .p12 certificate:
+#       - Export your iOS Distribution certificate from Keychain Access as .p12
+#       - Convert to base64: `base64 -i certificate.p12 | pbcopy`
+#    b) Generate .mobileprovision:
+#       - Download from Apple Developer Portal > Certificates, Identifiers & Profiles
+#       - Convert to base64: `base64 -i profile.mobileprovision | pbcopy`
+#
+# 4. Apple ID App-Specific Password:
+#    - Go to appleid.apple.com > Sign-In and Security > App-Specific Passwords
+#    - Generate a new password for "GitHub Actions"
+
 name: iOS Build and Archive
 
 on:
@@ -53,12 +81,58 @@ jobs:
       with:
         xcode-version: '16.4'
         
+    - name: Configure Xcode project for code signing
+      env:
+        APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+        HAS_CERTIFICATES: ${{ secrets.BUILD_CERTIFICATE_BASE64 != '' }}
+      run: |
+        cd ios
+        
+        # First, add the basic signing configuration that prebuild removed
+        echo "Adding code signing configuration to Xcode project..."
+        
+        # Create a script to add signing configuration
+        cat > add_signing.sh << 'EOF'
+        #!/bin/bash
+        # Add CODE_SIGN_STYLE and DEVELOPMENT_TEAM after CODE_SIGN_ENTITLEMENTS lines
+        temp_file=$(mktemp)
+        while IFS= read -r line; do
+          echo "$line" >> "$temp_file"
+          if [[ $line == *"CODE_SIGN_ENTITLEMENTS = SheetFlow/SheetFlow.entitlements;"* ]]; then
+            echo -e "\t\t\t\tCODE_SIGN_STYLE = Automatic;" >> "$temp_file"
+            echo -e "\t\t\t\tDEVELOPMENT_TEAM = \"\";" >> "$temp_file"
+          fi
+        done < SheetFlow.xcodeproj/project.pbxproj
+        mv "$temp_file" SheetFlow.xcodeproj/project.pbxproj
+        EOF
+        
+        chmod +x add_signing.sh
+        ./add_signing.sh
+        rm add_signing.sh
+        
+        if [ "$HAS_CERTIFICATES" = "true" ] && [ -n "$APPLE_TEAM_ID" ]; then
+          echo "Configuring manual code signing with team ID: $APPLE_TEAM_ID"
+          # Update project.pbxproj to set DEVELOPMENT_TEAM
+          sed -i '' "s/DEVELOPMENT_TEAM = \"\";/DEVELOPMENT_TEAM = \"$APPLE_TEAM_ID\";/g" SheetFlow.xcodeproj/project.pbxproj
+          
+          # Set code signing style to manual for release
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' SheetFlow.xcodeproj/project.pbxproj
+        else
+          echo "⚠️  Using automatic code signing (certificates not configured)"
+        fi
+        
+        # Show current configuration
+        echo "Current code signing configuration:"
+        grep -n "DEVELOPMENT_TEAM\|CODE_SIGN_STYLE" SheetFlow.xcodeproj/project.pbxproj | head -10 || echo "Configuration not found"
+        
     - name: Import certificates and provisioning profiles
+      if: ${{ secrets.BUILD_CERTIFICATE_BASE64 != '' }}
       env:
         BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
         P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
         BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
         KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
       run: |
         # Create variables
         CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
@@ -81,6 +155,37 @@ jobs:
         # Apply provisioning profile
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+        
+    - name: Configure Xcode project for code signing
+      env:
+        APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+        HAS_CERTIFICATES: ${{ secrets.BUILD_CERTIFICATE_BASE64 != '' }}
+      run: |
+        cd ios
+        
+        if [ "$HAS_CERTIFICATES" = "true" ] && [ -n "$APPLE_TEAM_ID" ]; then
+          echo "Configuring manual code signing with team ID: $APPLE_TEAM_ID"
+          # Update project.pbxproj to set DEVELOPMENT_TEAM
+          sed -i '' "s/DEVELOPMENT_TEAM = \"\";/DEVELOPMENT_TEAM = \"$APPLE_TEAM_ID\";/g" SheetFlow.xcodeproj/project.pbxproj
+          sed -i '' "s/DEVELOPMENT_TEAM = ;/DEVELOPMENT_TEAM = \"$APPLE_TEAM_ID\";/g" SheetFlow.xcodeproj/project.pbxproj
+          
+          # Set code signing style to manual for release
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' SheetFlow.xcodeproj/project.pbxproj
+        else
+          echo "⚠️  No certificates or team ID configured. Please set up the following secrets and variables:"
+          echo "   Secrets: BUILD_CERTIFICATE_BASE64, P12_PASSWORD, BUILD_PROVISION_PROFILE_BASE64, KEYCHAIN_PASSWORD"
+          echo "   Variables: APPLE_TEAM_ID"
+          echo ""
+          echo "For now, attempting to configure automatic signing (this will likely fail for Release builds)"
+          
+          # Try to set automatic signing (this is mainly for demonstration)
+          sed -i '' 's/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Automatic;/g' SheetFlow.xcodeproj/project.pbxproj
+        fi
+        
+        # Show current configuration
+        echo "Current code signing configuration:"
+        grep -n "DEVELOPMENT_TEAM" SheetFlow.xcodeproj/project.pbxproj | head -5 || echo "No DEVELOPMENT_TEAM found"
+        grep -n "CODE_SIGN_STYLE" SheetFlow.xcodeproj/project.pbxproj | head -5 || echo "No CODE_SIGN_STYLE found"
         
     - name: Build iOS app
       run: |
