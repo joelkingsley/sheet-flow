@@ -101,6 +101,7 @@ jobs:
           if [[ $line == *"CODE_SIGN_ENTITLEMENTS = SheetFlow/SheetFlow.entitlements;"* ]]; then
             echo -e "\t\t\t\tCODE_SIGN_STYLE = Automatic;" >> "$temp_file"
             echo -e "\t\t\t\tDEVELOPMENT_TEAM = \"\";" >> "$temp_file"
+            echo -e "\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"\";" >> "$temp_file"
           fi
         done < SheetFlow.xcodeproj/project.pbxproj
         mv "$temp_file" SheetFlow.xcodeproj/project.pbxproj
@@ -117,8 +118,15 @@ jobs:
           
           # Set code signing style to manual for release
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' SheetFlow.xcodeproj/project.pbxproj
+          
+          # Set provisioning profile specifier to use distribution profile
+          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = "";/PROVISIONING_PROFILE_SPECIFIER = "SheetFlow";/g' SheetFlow.xcodeproj/project.pbxproj
         else
           echo "⚠️  Using automatic code signing (certificates not configured)"
+          # For automatic signing, ensure team ID is set
+          if [ -n "$APPLE_TEAM_ID" ]; then
+            sed -i '' "s/DEVELOPMENT_TEAM = \"\";/DEVELOPMENT_TEAM = \"$APPLE_TEAM_ID\";/g" SheetFlow.xcodeproj/project.pbxproj
+          fi
         fi
         
         # Show current configuration
