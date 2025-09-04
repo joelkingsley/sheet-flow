@@ -195,7 +195,15 @@ jobs:
 
         # Apply provisioning profile
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+        cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+        
+        # List installed provisioning profiles for debugging
+        echo "Installed provisioning profiles:"
+        ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+        
+        # Show certificate details for debugging
+        echo "Available certificates in keychain:"
+        security find-identity -v -p codesigning $KEYCHAIN_PATH
         
         echo "✅ Certificates and provisioning profiles imported successfully"
         
@@ -220,7 +228,7 @@ jobs:
           <key>method</key>
           <string>app-store-connect</string>
           <key>teamID</key>
-          <string>\${{ vars.APPLE_TEAM_ID }}</string>
+          <string>${{ vars.APPLE_TEAM_ID }}</string>
           <key>provisioningProfiles</key>
           <dict>
             <key>com.joelkingsleyr.sheetflow</key>
@@ -235,6 +243,9 @@ jobs:
         </dict>
         </plist>
         EOF
+        
+        echo "Generated ExportOptions.plist:"
+        cat $RUNNER_TEMP/ExportOptions.plist
         
         # Export archive to IPA
         xcodebuild -exportArchive \
