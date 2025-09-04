@@ -19,7 +19,7 @@
 #       - Export your iOS Distribution certificate from Keychain Access as .p12
 #       - Convert to base64: `base64 -i certificate.p12 | pbcopy`
 #    b) Generate .mobileprovision:
-#       - Download from Apple Developer Portal > Certificates, Identifiers & Profiles
+#       - Download App Store Distribution provisioning profile from Apple Developer Portal
 #       - Convert to base64: `base64 -i profile.mobileprovision | pbcopy`
 #
 # 4. Apple ID App-Specific Password:
@@ -88,13 +88,15 @@ jobs:
       run: |
         cd ios
         
-        # First, add the basic signing configuration that prebuild removed
-        echo "Adding code signing configuration to Xcode project..."
+        echo "Configuring code signing for SheetFlow project..."
         
-        # Create a script to add signing configuration
+        # First, remove old CODE_SIGN_IDENTITY that uses deprecated "iPhone Developer"
+        sed -i '' '/CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]/d' SheetFlow.xcodeproj/project.pbxproj
+        
+        # Create a script to add signing configuration to target builds
         cat > add_signing.sh << 'EOF'
         #!/bin/bash
-        # Add CODE_SIGN_STYLE and DEVELOPMENT_TEAM after CODE_SIGN_ENTITLEMENTS lines
+        # Add CODE_SIGN_STYLE, DEVELOPMENT_TEAM, and other signing settings after CODE_SIGN_ENTITLEMENTS lines
         temp_file=$(mktemp)
         while IFS= read -r line; do
           echo "$line" >> "$temp_file"
@@ -116,11 +118,15 @@ jobs:
           # Update project.pbxproj to set DEVELOPMENT_TEAM
           sed -i '' "s/DEVELOPMENT_TEAM = \"\";/DEVELOPMENT_TEAM = \"$APPLE_TEAM_ID\";/g" SheetFlow.xcodeproj/project.pbxproj
           
-          # Set code signing style to manual for release
+          # Set code signing style to manual for manual certificate management
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' SheetFlow.xcodeproj/project.pbxproj
           
-          # Set provisioning profile specifier to use distribution profile
+          # Set provisioning profile specifier
           sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = "";/PROVISIONING_PROFILE_SPECIFIER = "SheetFlow";/g' SheetFlow.xcodeproj/project.pbxproj
+          
+          # For manual signing, we need to be explicit about not specifying CODE_SIGN_IDENTITY
+          # This allows Xcode to automatically choose the right certificate from the keychain
+          echo "Using automatic certificate selection from keychain for manual provisioning"
         else
           echo "⚠️  Using automatic code signing (certificates not configured)"
           # For automatic signing, ensure team ID is set
@@ -131,7 +137,7 @@ jobs:
         
         # Show current configuration
         echo "Current code signing configuration:"
-        grep -n "DEVELOPMENT_TEAM\|CODE_SIGN_STYLE" SheetFlow.xcodeproj/project.pbxproj | head -10 || echo "Configuration not found"
+        grep -n "DEVELOPMENT_TEAM\|CODE_SIGN_STYLE\|PROVISIONING_PROFILE_SPECIFIER" SheetFlow.xcodeproj/project.pbxproj | head -10 || echo "Configuration not found"
         
     - name: Import certificates and provisioning profiles (if available)
       env:
