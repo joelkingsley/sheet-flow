@@ -115,6 +115,7 @@ jobs:
         
         if [ "$HAS_CERTIFICATES" = "true" ] && [ -n "$APPLE_TEAM_ID" ]; then
           echo "Configuring manual code signing with team ID: $APPLE_TEAM_ID"
+          
           # Update project.pbxproj to set DEVELOPMENT_TEAM
           sed -i '' "s/DEVELOPMENT_TEAM = \"\";/DEVELOPMENT_TEAM = \"$APPLE_TEAM_ID\";/g" SheetFlow.xcodeproj/project.pbxproj
           
@@ -124,9 +125,23 @@ jobs:
           # Set provisioning profile specifier
           sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = "";/PROVISIONING_PROFILE_SPECIFIER = "SheetFlow";/g' SheetFlow.xcodeproj/project.pbxproj
           
-          # For manual signing, we need to be explicit about not specifying CODE_SIGN_IDENTITY
-          # This allows Xcode to automatically choose the right certificate from the keychain
-          echo "Using automatic certificate selection from keychain for manual provisioning"
+          # Add CODE_SIGN_IDENTITY for Distribution certificate to both Debug and Release
+          cat > add_identity.sh << 'IDENTITY_EOF'
+        #!/bin/bash
+        temp_file=$(mktemp)
+        while IFS= read -r line; do
+          echo "$line" >> "$temp_file"
+          if [[ $line == *"CODE_SIGN_ENTITLEMENTS = SheetFlow/SheetFlow.entitlements;"* ]]; then
+            echo -e "\t\t\t\tCODE_SIGN_IDENTITY = \"iPhone Distribution\";" >> "$temp_file"
+          fi
+        done < SheetFlow.xcodeproj/project.pbxproj
+        mv "$temp_file" SheetFlow.xcodeproj/project.pbxproj
+        IDENTITY_EOF
+          chmod +x add_identity.sh
+          ./add_identity.sh
+          rm add_identity.sh
+          
+          echo "Configured for Distribution certificate with manual provisioning"
         else
           echo "⚠️  Using automatic code signing (certificates not configured)"
           # For automatic signing, ensure team ID is set
@@ -137,7 +152,7 @@ jobs:
         
         # Show current configuration
         echo "Current code signing configuration:"
-        grep -n "DEVELOPMENT_TEAM\|CODE_SIGN_STYLE\|PROVISIONING_PROFILE_SPECIFIER" SheetFlow.xcodeproj/project.pbxproj | head -10 || echo "Configuration not found"
+        grep -n "DEVELOPMENT_TEAM\|CODE_SIGN_STYLE\|PROVISIONING_PROFILE_SPECIFIER\|CODE_SIGN_IDENTITY" SheetFlow.xcodeproj/project.pbxproj | head -15 || echo "Configuration not found"
         
     - name: Import certificates and provisioning profiles (if available)
       env:
