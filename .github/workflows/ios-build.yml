@@ -218,9 +218,14 @@ jobs:
         <plist version="1.0">
         <dict>
           <key>method</key>
-          <string>app-store</string>
+          <string>app-store-connect</string>
           <key>teamID</key>
           <string>\${{ vars.APPLE_TEAM_ID }}</string>
+          <key>provisioningProfiles</key>
+          <dict>
+            <key>com.joelkingsleyr.sheetflow</key>
+            <string>SheetFlow</string>
+          </dict>
           <key>uploadBitcode</key>
           <false/>
           <key>uploadSymbols</key>
