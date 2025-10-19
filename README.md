@@ -302,20 +302,6 @@ npx eas build --platform android --profile production --local
 
 ---
 
-## Roadmap
-
-- 🎧 Enhanced MIDI playback with tempo controls and metronome
-- ✏️ User annotations and cloud sync
-- 📚 Personal sheet music collections and favorites
-- 🎼 Expanded score library: more genres & composers
-- ⚡ Performance improvements for very large scores
-- 🧑‍🤝‍🧑 Collaborative features and sharing
-- 📊 Practice tracking and progress analytics
-- 🎵 Transposition and key signature adjustments
-- 📱 Offline mode and sheet music caching
-
----
-
 ## Dependencies
 
 - **React Native WebView:** For rendering HTML/JavaScript content in the native app
